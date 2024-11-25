@@ -1,38 +1,20 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Simon
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**S**ales and **I**nventory **M**anagement m**ON**ster
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Simon은 사용자가 판매 및 재고를 관리할 수 있는 판매 및 재고 관리 시스템입니다.
 
-## Project setup
+## Usage
+
+### Project setup
 
 ```bash
 $ pnpm install
 ```
 
-## Compile and run the project
+### Compile and run the project
 
 ```bash
 # development
@@ -45,7 +27,7 @@ $ pnpm run start:dev
 $ pnpm run start:prod
 ```
 
-## Run tests
+### Run tests
 
 ```bash
 # unit tests
@@ -58,42 +40,68 @@ $ pnpm run test:e2e
 $ pnpm run test:cov
 ```
 
-## Deployment
+## Architecture
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Simon은 다음과 같은 기술을 사용하여 구현되어 있습니다.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- **NestJS**: Node.js 프레임워크로 Simon의 서버를 구현합니다.
+- **TypeORM**: TypeScript ORM으로 Simon의 데이터베이스를 구현합니다.
+- **PostgreSQL**: Simon의 데이터베이스로 사용합니다.
 
-```bash
-$ pnpm install -g mau
-$ mau deploy
-```
+## Domain
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Simon은 다음과 같은 도메인을 가지고 있습니다.
 
-## Resources
+### Product(제품)
 
-Check out a few resources that may come in handy when working with NestJS:
+제품은 사용자가 판매할 수 있는 상품이다.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+제품은 카테고리로 분류할 수 있다. 카테고리는 제품을 분류하는 기준이다. 하나의 제품은 여러 카테고리에 속할 수 있다. 카테고리는 상위 카테고리를 가질 수 있다.
 
-## Support
+제품은 생산자 혹은 판매자로부터 구매할 수 있다.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Staff(직원)
 
-## Stay in touch
+직원은 판매 및 재고 관리를 담당하는 사용자이다.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Sale(판매)
 
-## License
+판매는 사용자가 제품을 판매하는 행위이다. 판매에는 견적서와 영수증이 있다.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+견적서는 판매를 예약하는 문서이다. 영수증은 판매를 완료하는 문서이다.
+
+여러 견적서를 하나의 영수증으로 묶어 판매를 완료할 수 있다.
+
+### Inventory(재고)
+
+재고는 사용자가 보유하고 있는 제품의 수량이다. 재고는 제품의 수량과 위치를 가지고 있다. 위치는 제품이 보관되는 장소이다. 장소는 상위 장소를 가질 수 있다.
+
+재고는 발주에 의해 증가하거나 판매에 의해 감소할 수 있다.
+
+### Order(발주)
+
+발주는 사용자가 제품을 구매하는 행위이다.
+
+### Receive(입고)
+
+입고는 사용자가 제품을 재고에 추가하는 행위이다.
+
+발주서를 바탕으로 도착 수량을 입력하여 제품을 재고에 추가할 수 있다.
+
+### Delivery(배송)
+
+배송은 사용자가 제품을 판매하는 고객에게 전달하는 행위이다.
+
+### Party(거래처)
+
+거래처는 사용자가 제품을 구매하는 생산자 혹은 판매자이다.
+
+### Recovery(회수)
+
+회수는 고객으로부터 사용된 제품을 회수하는 행위이다.
+
+제품을 회수대상 제품으로 지정할 수 있으며, 회수대상 제품은 판매가 되면 자동으로 리스트에 추가된다.
+
+### Report(보고서)
+
+보고서는 사용자가 판매 및 재고 관리에 대한 정보를 확인할 수 있는 문서이다.
