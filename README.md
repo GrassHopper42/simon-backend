@@ -50,6 +50,8 @@ Simon은 다음과 같은 기술을 사용하여 구현되어 있습니다.
 
 ## Domain
 
+[도메인 위키](https://github.com/GrassHopper42/simon-backend/wiki/Domain)
+
 ```mermaid
 classDiagram
     %% Core Domains
