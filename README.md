@@ -54,144 +54,202 @@ Simon은 다음과 같은 기술을 사용하여 구현되어 있습니다.
 
 ```mermaid
 classDiagram
-    %% Core Domains
     class Product {
         +code
         +name
         +price
         +unit
-        +status
+        +capacity
+        +specification
+        +description
+        +isRecoverable
+        +optimalStock
+        +safetyStock
+        +status [판매중, 판매중지]
+        +List~Category~ categories
     }
 
     class Party {
         +code
         +name
-        +type
+        +alias
+        +phone
+        +address
+        +email
         +businessNumber
+        +industry
+        +List~PartyGroup~ groups
+        +type [개인, 업체]
+        +role [구매자, 판매자, 양쪽]
     }
 
     class Staff {
         +name
         +phone
-        +role
+        +role [관리자, 판매자, 재고관리자, 배송담당자]
+        +birthDate
+        +address
     }
 
     class Sale {
-        +products
-        +customer
-        +seller
+        +List~SaleItem~ items
+        +Party customer
+        +Staff seller
         +totalAmount
+        +List~Payment~ payments
+        +Delivery delivery
         +status
+        +generateEstimate()
+        +generateReceipt()
+        +cancel()
+        +return()
     }
 
-    class Inventory {
-        +product
+    class Estimate {
+        +estimateNumber
+        +List~EstimateItem~ items
+        +estimateDate
+        +validUntil
+        +totalAmount
+        +Party customer
+        +Staff seller
+        +customerRequest
+        +Map additionalInfo
+        +convertToSale()
+    }
+
+    class Receipt {
+        +receiptNumber
+        +List~ReceiptItem~ items
+        +saleDate
+        +totalAmount
+        +Party customer
+        +DeliveryInfo deliveryInfo
+        +Staff seller
+        +status [판매접수, 판매완료]
+    }
+
+    class SaleItem {
+        +Product product
         +quantity
-        +location
+        +price
     }
 
     class Order {
-        +products
-        +supplier
+        +List~OrderItem~ items
+        +Party supplier
+        +Staff orderer
         +orderDate
-        +status
+        +expectedDate
+        +totalAmount
+        +status [발주대기, 발주완료, 입고대기, 입고완료]
+    }
+
+    class OrderItem {
+        +Product product
+        +orderQuantity
+        +arrivalQuantity
+        +price
+    }
+
+    class Inventory {
+        +Product product
+        +quantity
+        +location
+        +stockTakingDate
+        +Staff stockTaker
+        +adjustStock()
+        +checkSafetyStock()
     }
 
     class AccountBalance {
-        +party
+        +Party party
         +amount
-        +type
+        +lastModifiedDate
+        +type [선수금, 미수금, 선급금, 미지급금]
         +status
     }
 
     class Transaction {
-        +party
-        +amount
-        +type
+        +Party party
         +date
+        +amount
+        +type [판매, 발주, 수금, 지급, 판매취소, 반품]
+        +Staff handler
+        +note
     }
 
-    %% Documents
-    class Estimate {
-        +products
-        +customer
-        +validUntil
-    }
-
-    class Receipt {
-        +products
-        +customer
-        +totalAmount
-    }
-
-    %% Supporting Domains
     class Recovery {
-        +product
-        +customer
-        +status
-    }
-
-    class Delivery {
-        +receipt
-        +status
-        +address
+        +Product product
+        +Party customer
+        +status [회수대기, 회수완료, 분실, 대금지급]
+        +recoveryDate
     }
 
     class Payment {
-        +amount
-        +method
         +date
+        +amount
+        +method [현금, 카드, 계좌이체, 기타]
+        +Staff handler
+    }
+
+    class Delivery {
+        +Receipt receipt
+        +address
+        +status [배송준비, 배송중, 배송완료]
+        +Staff deliveryStaff
     }
 
     class Notification {
         +content
-        +priority
-        +receiver
+        +date
+        +priority [일반, 중요, 긴급]
+        +Staff receiver
+        +isConfirmed
     }
 
     class Audit {
-        +event
+        +eventType
         +date
-        +user
+        +Staff user
+        +eventDetails
     }
 
     %% Relationships
-    Product --> Sale : sold through
-    Product --> Inventory : stored in
-    Product --> Order : ordered via
-    Product --> Recovery : can be recovered
+    Product "1" --> "*" SaleItem
+    Product "1" --> "*" OrderItem
+    Product "1" --> "*" Inventory
+    Product "*" --> "*" Category
 
-    Party --> Sale : buys
-    Party --> Order : supplies
-    Party --> AccountBalance : has
+    Party "1" --> "*" Sale
+    Party "1" --> "*" Order
+    Party "1" --> "*" AccountBalance
+    Party "*" --> "*" PartyGroup
 
-    Staff --> Sale : handles
-    Staff --> Order : manages
-    Staff --> Inventory : maintains
+    Staff "1" --> "*" Sale
+    Staff "1" --> "*" Order
+    Staff "1" --> "*" Inventory
+    Staff "1" --> "*" Payment
+    Staff "1" --> "*" Delivery
+    Staff "1" --> "*" Transaction
 
-    Sale --> Estimate : generates
-    Sale --> Receipt : issues
-    Sale --> Payment : receives
-    Sale --> Delivery : triggers
-    Sale --> Transaction : records
+    Sale "1" --> "*" Payment
+    Sale "1" --> "1" Delivery
+    Sale "1..*" --> "1" Receipt
+    Sale "0..*" --> "1" Estimate
 
-    Order --> Inventory : updates
-    Order --> Transaction : records
+    Order "1" --> "*" OrderItem
+    Order "1" --> "1..*" Receive
 
-    AccountBalance --> Transaction : tracks
-    AccountBalance --> Notification : triggers
+    AccountBalance "1" --> "*" Transaction
 
-    Inventory --> Notification : triggers
+    Delivery "1" --> "1" Receipt
 
-    Receipt --> Delivery : includes
+    Recovery --> Product
+    Recovery --> Party
 
-    %% All domains can trigger audit
-    Sale .. Audit : logs
-    Order .. Audit : logs
-    Inventory .. Audit : logs
-    Payment .. Audit : logs
-    Recovery .. Audit : logs
-    Transaction .. Audit : logs
+    Inventory --> Notification
+    AccountBalance --> Notification
 ```
 
 ## ERD
