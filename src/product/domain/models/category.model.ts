@@ -7,7 +7,8 @@ export class Category {
   private _parentId?: number;
 
   constructor(props: CategoryProps) {
-    const { name, parentId } = props;
+    const { id, name, parentId } = props;
+    this._id = id;
     this._name = name;
     this._parentId = parentId;
 
@@ -38,15 +39,10 @@ export class Category {
 
     return this;
   }
-
-  protected setId(id: number): Category {
-    this._id = id;
-
-    return this;
-  }
 }
 
 interface CategoryProps {
+  id?: number;
   name: string;
   parentId?: number | null;
 }

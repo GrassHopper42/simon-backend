@@ -1,13 +1,11 @@
 import { Money } from 'src/common/value/money.vo';
-import { Price } from '../../value-objects/price.vo';
+import { Price } from '../../values/price.vo';
 import { Category } from '../category.model';
 import { Product } from '../product.model';
 
 describe('Product Model', () => {
   const createCategory = (name: string, id: number): Category => {
-    const category = new Category({ name });
-    category['_id'] = id;
-    return category;
+    return new Category({ id, name });
   };
 
   describe('create', () => {

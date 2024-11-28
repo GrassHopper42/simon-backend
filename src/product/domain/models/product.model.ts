@@ -4,10 +4,6 @@ import { DomainValidationError } from 'src/common/error/validation';
 export class Product {
   private _id?: number;
 
-  protected setId(id: number): void {
-    this._id = id;
-  }
-
   private _code: string;
   private _name: string;
   private _price: Price;
