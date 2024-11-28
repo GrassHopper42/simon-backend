@@ -1,11 +1,18 @@
-import { Min } from 'class-validator';
+import { DomainValidationError } from '../error/validation';
 
 export class Money {
-  @Min(0, { message: '금액은 음수일 수 없습니다' })
-  private readonly amount: number;
+  private readonly _amount: number;
 
   constructor(amount: number) {
-    this.amount = amount;
+    this._amount = amount;
+
+    this.validate();
+  }
+
+  private validate(): void {
+    if (this._amount < 0) {
+      throw new DomainValidationError('금액은 음수일 수 없습니다');
+    }
   }
 
   static readonly ZERO = new Money(0);
@@ -14,23 +21,23 @@ export class Money {
     return new Money(amount);
   }
 
-  public getAmount(): number {
-    return this.amount;
+  get amount(): number {
+    return this._amount;
   }
 
   public add(money: Money): Money {
-    return new Money(this.amount + money.amount);
+    return new Money(this._amount + money._amount);
   }
 
   public subtract(money: Money): Money {
-    return new Money(this.amount - money.amount);
+    return new Money(this._amount - money._amount);
   }
 
   public multiply(multiplier: number): Money {
-    return new Money(this.amount * multiplier);
+    return new Money(this._amount * multiplier);
   }
 
   public divide(divisor: number): Money {
-    return new Money(this.amount / divisor);
+    return new Money(this._amount / divisor);
   }
 }

@@ -1,17 +1,23 @@
-import { IsNotEmpty } from 'class-validator';
+import { DomainValidationError } from 'src/common/error/validation';
 
 export class Category {
   private _id?: number;
 
-  @IsNotEmpty({ message: '카테고리 이름은 필수입니다' })
   private _name: string;
-
   private _parentId?: number;
 
   constructor(props: CategoryProps) {
     const { name, parentId } = props;
     this._name = name;
     this._parentId = parentId;
+
+    this.validateName();
+  }
+
+  private validateName(): void {
+    if (!this._name || this._name.trim().length === 0) {
+      throw new DomainValidationError('카테고리 이름은 필수입니다');
+    }
   }
 
   get id(): number | undefined {
@@ -26,12 +32,17 @@ export class Category {
     return this._parentId;
   }
 
-  changeName(name: string): void {
+  updateName(name: string): Category {
     this._name = name;
+    this.validateName();
+
+    return this;
   }
 
-  protected setId(id: number): void {
+  protected setId(id: number): Category {
     this._id = id;
+
+    return this;
   }
 }
 
