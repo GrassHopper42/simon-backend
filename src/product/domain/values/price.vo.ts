@@ -15,7 +15,7 @@ export class Price {
   ) {
     this._taxRate = taxRate;
     this._withoutTax = priceWithoutTax;
-    this._withTax = this.calculatePriceWithTax();
+    this._withTax = this.calculateTaxIncludedPrice();
 
     this.validate();
   }
@@ -47,7 +47,7 @@ export class Price {
     }
   }
 
-  private calculatePriceWithTax(): Money {
+  private calculateTaxIncludedPrice(): Money {
     return this._withoutTax.multiply(1 + this._taxRate / 100);
   }
 

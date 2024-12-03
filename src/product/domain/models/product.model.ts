@@ -1,10 +1,16 @@
 import { Category } from './category.model';
 import { Price } from '../values/price.vo';
 import { DomainValidationError } from 'src/common/error/validation';
-export class Product {
-  private _id?: number;
+import { AggregateRoot } from 'src/common/ddd/aggregate-root';
+import { ProductPriceUpdated } from '../events/price-update.event';
+import { Branded } from 'src/common/types/branded';
+import { ProductPolicy } from '../policies/product.policy';
 
-  private _code: string;
+export type ProductId = Branded<string, 'ProductId'>;
+export type ProductCode = Branded<string, 'ProductCode'>;
+
+export class Product extends AggregateRoot<ProductId> {
+  private _code: ProductCode;
   private _name: string;
   private _price: Price;
 
@@ -19,9 +25,19 @@ export class Product {
   private _categories: Category[];
 
   constructor(props: ProductProps) {
-    this._id = props.id;
-    this._code = props.code;
-    this._name = props.name;
+    super(props.id);
+
+    const codeValidation = ProductPolicy.validateCode(props.code);
+    if (codeValidation.success === false) throw codeValidation.error;
+    const nameValidation = ProductPolicy.validateName(props.name);
+    if (nameValidation.success === false) throw nameValidation.error;
+    const categoryValidation = ProductPolicy.validateCategories(
+      props.categories,
+    );
+    if (categoryValidation.success === false) throw categoryValidation.error;
+
+    this._code = codeValidation.value;
+    this._name = nameValidation.value;
     this._price = props.price;
     this._unit = props.unit;
     this._capacity = props.capacity;
@@ -29,92 +45,78 @@ export class Product {
     this._description = props.description;
     this._isRecovarable = props.isRecovarable;
     this._status = props.status ?? ProductStatus.ON_SALE;
-    this._categories = props.categories;
-
-    this.validateProduct();
+    this._categories = categoryValidation.value;
   }
 
-  private validateProduct(): void {
-    if (this._code.length < 3) {
-      throw new DomainValidationError('상품 코드는 3자 이상이어야 합니다');
-    }
+  public updatePrice(newPrice?: Price): Product {
+    if (!newPrice) return this;
 
-    if (!this.name || this.name.trim().length === 0) {
-      throw new DomainValidationError('상품 이름은 필수입니다');
-    }
+    const oldPrice = this.price;
 
-    if (!this.price) {
-      throw new DomainValidationError('상품 가격은 필수입니다');
-    }
+    this.addDomainEvent(
+      new ProductPriceUpdated(this.id.toString(), oldPrice, this.price),
+    );
 
-    if (!this.categories || this.categories.length === 0) {
-      throw new DomainValidationError(
-        '상품은 최소 1개 이상의 카테고리를 가져야 합니다',
-      );
-    }
-  }
-
-  public updatePrice(newPrice: Price): void {
-    this._price = newPrice;
+    return new Product({
+      ...this.toProductProps(),
+      price: newPrice,
+    });
   }
 
   public updateProductDetail(props: ProductDetailProps): Product {
-    if (props.unit) {
-      this._unit = props.unit;
-    }
-
-    if (props.capacity) {
-      this._capacity = props.capacity;
-    }
-
-    if (props.specification) {
-      this._specification = props.specification;
-    }
-
-    if (props.description) {
-      this._description = props.description;
-    }
-
-    return this;
+    return new Product({
+      ...this.toProductProps(),
+      ...props,
+    });
   }
 
   public resume(): Product {
-    if (this._status === ProductStatus.ON_SALE) {
-      throw new DomainValidationError('이미 판매 중인 상품입니다');
-    }
-    this._status = ProductStatus.ON_SALE;
-    return this;
+    return new Product({
+      ...this.toProductProps(),
+      status: ProductStatus.ON_SALE,
+    });
   }
 
   public discontinue(): Product {
-    if (this._status === ProductStatus.DISCONTINUED) {
-      throw new DomainValidationError('이미 판매 종료된 상품입니다');
-    }
-    this._status = ProductStatus.DISCONTINUED;
-    return this;
+    return new Product({
+      ...this.toProductProps(),
+      status: ProductStatus.DISCONTINUED,
+    });
+  }
+
+  public setRecovarable(isRecovarable?: boolean): Product {
+    if (isRecovarable === undefined) return this;
+    return new Product({
+      ...this.toProductProps(),
+      isRecovarable,
+    });
+  }
+
+  public hasCategory(categoryId: number): boolean {
+    return this._categories.some((c) => c.id === categoryId);
   }
 
   public addCategory(category: Category): Product {
-    if (this._categories.some((c) => c.id === category.id)) {
-      throw new DomainValidationError('이미 등록된 카테고리입니다');
-    }
-    this._categories.push(category);
-    return this;
+    if (this.hasCategory(category.id))
+      throw new DomainValidationError('이미 추가된 카테고리입니다');
+    return new Product({
+      ...this.toProductProps(),
+      categories: [...this._categories, category],
+    });
   }
 
   public removeCategory(categoryId: number): Product {
-    if (!this._categories.some((c) => c.id === categoryId)) {
-      throw new DomainValidationError('등록되지 않은 카테고리입니다');
-    }
-    this._categories = this._categories.filter((c) => c.id !== categoryId);
-    return this;
+    if (this._categories.length === 1)
+      throw new DomainValidationError('최소 1개 이상의 카테고리가 필요합니다');
+    if (!this.hasCategory(categoryId))
+      throw new DomainValidationError('해당 카테고리가 없습니다');
+    return new Product({
+      ...this.toProductProps(),
+      categories: this._categories.filter((c) => c.id !== categoryId),
+    });
   }
 
-  get id(): number | undefined {
-    return this._id;
-  }
-
-  get code(): string {
+  get code(): ProductCode {
     return this._code;
   }
 
@@ -153,17 +155,29 @@ export class Product {
   get categories(): Category[] {
     return [...this._categories];
   }
+
+  private toProductProps(): ProductProps {
+    return {
+      id: this.id,
+      code: this.code,
+      name: this.name,
+      price: this.price,
+      unit: this.unit,
+      capacity: this.capacity,
+      specification: this.specification,
+      description: this.description,
+      isRecovarable: this.isRecovarable,
+      status: this.status,
+      categories: this.categories,
+    };
+  }
 }
 
-export interface ProductProps {
-  id?: number | null;
-  code: string;
+export interface ProductProps extends ProductDetailProps {
+  id?: ProductId | null;
+  code: ProductCode;
   name: string;
   price: Price;
-  unit?: string;
-  capacity?: string;
-  specification?: string;
-  description?: string;
   isRecovarable?: boolean;
   status?: ProductStatus | null;
   categories: Category[];

@@ -8,15 +8,24 @@ export class Category {
 
   constructor(props: CategoryProps) {
     const { id, name, parentId } = props;
+    this.validateName(name);
+    this.validateCircularReference(parentId);
+
     this._id = id;
     this._name = name;
     this._parentId = parentId;
-
-    this.validateName();
   }
 
-  private validateName(): void {
-    if (!this._name || this._name.trim().length === 0) {
+  private validateCircularReference(parentId: number): void {
+    if (this._id === parentId) {
+      throw new DomainValidationError(
+        '부모 카테고리를 자기 자신으로 설정할 수 없습니다',
+      );
+    }
+  }
+
+  private validateName(name: string): void {
+    if (!name || name.trim().length === 0) {
       throw new DomainValidationError('카테고리 이름은 필수입니다');
     }
   }
@@ -34,8 +43,8 @@ export class Category {
   }
 
   updateName(name: string): Category {
+    this.validateName(name);
     this._name = name;
-    this.validateName();
 
     return this;
   }
