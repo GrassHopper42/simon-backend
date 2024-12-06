@@ -1,22 +1,25 @@
+import { Entity } from 'src/common/ddd/entity';
+import { IdGenerator } from 'src/common/ddd/id.generator';
 import { DomainValidationError } from 'src/common/error/validation';
+import { Branded } from 'src/common/types/branded';
 
-export class Category {
-  private _id?: number;
+export type CategoryId = Branded<string, 'CategoryId'>;
 
+export class Category extends Entity<CategoryId> {
   private _name: string;
-  private _parentId?: number;
+  private _parentId?: string;
 
   constructor(props: CategoryProps) {
     const { id, name, parentId } = props;
+    super(id);
     this.validateName(name);
     this.validateCircularReference(parentId);
 
-    this._id = id;
     this._name = name;
     this._parentId = parentId;
   }
 
-  private validateCircularReference(parentId: number): void {
+  private validateCircularReference(parentId: string): void {
     if (this._id === parentId) {
       throw new DomainValidationError(
         '부모 카테고리를 자기 자신으로 설정할 수 없습니다',
@@ -24,22 +27,14 @@ export class Category {
     }
   }
 
-  private validateName(name: string): void {
-    if (!name || name.trim().length === 0) {
-      throw new DomainValidationError('카테고리 이름은 필수입니다');
-    }
-  }
+  public static create(props: CategoryCreateProps): Category {
+    const id = IdGenerator.generate() as CategoryId;
 
-  get id(): number | undefined {
-    return this._id;
-  }
-
-  get name(): string {
-    return this._name;
-  }
-
-  get parentId(): number | undefined {
-    return this._parentId;
+    return new Category({
+      id,
+      name: props.name,
+      parentId: props.parentId,
+    });
   }
 
   updateName(name: string): Category {
@@ -48,10 +43,33 @@ export class Category {
 
     return this;
   }
+
+  private validateName(name: string): void {
+    if (!name || name.trim().length === 0) {
+      throw new DomainValidationError('카테고리 이름은 필수입니다');
+    }
+  }
+
+  get id(): CategoryId {
+    return this._id;
+  }
+
+  get name(): string {
+    return this._name;
+  }
+
+  get parentId(): string | undefined {
+    return this._parentId;
+  }
 }
 
 interface CategoryProps {
-  id?: number;
+  id: CategoryId;
   name: string;
-  parentId?: number | null;
+  parentId?: string | null;
+}
+
+interface CategoryCreateProps {
+  name: string;
+  parentId?: string | null;
 }

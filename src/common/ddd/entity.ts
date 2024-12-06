@@ -1,10 +1,8 @@
-import { IdGenerator } from './id.generator';
-
 export abstract class Entity<T = string> {
   protected readonly _id: T;
 
-  constructor(id?: T) {
-    this._id = id || (IdGenerator.generate() as T);
+  constructor(id: T) {
+    this._id = id;
   }
 
   get id(): T {

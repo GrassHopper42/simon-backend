@@ -4,11 +4,11 @@ export const CATEGORY_REPOSITORY = 'CATEGORY_REPOSITORY';
 
 export interface CategoryRepository {
   findAll(): Promise<Category[]>;
-  findAllByIds(ids: number[]): Promise<Category[]>;
-  findById(id: number): Promise<Category | null>;
+  findAllByIds(ids: string[]): Promise<Category[]>;
+  findById(id: string): Promise<Category | null>;
   findByName(name: string): Promise<Category | null>;
-  findChildren(parentId: number): Promise<Category[]>;
+  findChildren(parentId: string): Promise<Category[]>;
   save(category: Category): Promise<void>;
   update(category: Category): Promise<void>;
-  delete(id: number): Promise<void>;
+  delete(id: string): Promise<void>;
 }

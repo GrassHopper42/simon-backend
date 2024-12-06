@@ -5,6 +5,9 @@ import { AggregateRoot } from 'src/common/ddd/aggregate-root';
 import { ProductPriceUpdated } from '../events/price-update.event';
 import { Branded } from 'src/common/types/branded';
 import { ProductPolicy } from '../policies/product.policy';
+import { ProductCreatedEvent } from '../events/product-created.event';
+import { IdGenerator } from 'src/common/ddd/id.generator';
+import { ProductDeletedEvent } from '../events/product-deleted.event';
 
 export type ProductId = Branded<string, 'ProductId'>;
 export type ProductCode = Branded<string, 'ProductCode'>;
@@ -46,6 +49,33 @@ export class Product extends AggregateRoot<ProductId> {
     this._isRecovarable = props.isRecovarable;
     this._status = props.status ?? ProductStatus.ON_SALE;
     this._categories = categoryValidation.value;
+  }
+
+  public static create(props: ProductCreateProps): Product {
+    const id = IdGenerator.generate() as ProductId;
+
+    const product = new Product({
+      id,
+      ...props,
+    });
+
+    product.addDomainEvent(
+      new ProductCreatedEvent(product.id.toString(), product),
+    );
+
+    return product;
+  }
+
+  public updateName(newName?: string): Product {
+    if (!newName) return this;
+
+    const nameValidation = ProductPolicy.validateName(newName);
+    if (nameValidation.success === false) throw nameValidation.error;
+
+    return new Product({
+      ...this.toProductProps(),
+      name: nameValidation.value,
+    });
   }
 
   public updatePrice(newPrice?: Price): Product {
@@ -92,7 +122,7 @@ export class Product extends AggregateRoot<ProductId> {
     });
   }
 
-  public hasCategory(categoryId: number): boolean {
+  public hasCategory(categoryId: string): boolean {
     return this._categories.some((c) => c.id === categoryId);
   }
 
@@ -105,7 +135,7 @@ export class Product extends AggregateRoot<ProductId> {
     });
   }
 
-  public removeCategory(categoryId: number): Product {
+  public removeCategory(categoryId: string): Product {
     if (this._categories.length === 1)
       throw new DomainValidationError('최소 1개 이상의 카테고리가 필요합니다');
     if (!this.hasCategory(categoryId))
@@ -114,6 +144,17 @@ export class Product extends AggregateRoot<ProductId> {
       ...this.toProductProps(),
       categories: this._categories.filter((c) => c.id !== categoryId),
     });
+  }
+
+  public delete(): Product {
+    const product = new Product({
+      ...this.toProductProps(),
+      status: null,
+    });
+
+    product.addDomainEvent(new ProductDeletedEvent(product.id.toString()));
+
+    return product;
   }
 
   get code(): ProductCode {
@@ -173,8 +214,17 @@ export class Product extends AggregateRoot<ProductId> {
   }
 }
 
+export interface ProductCreateProps extends ProductDetailProps {
+  code: ProductCode;
+  name: string;
+  price: Price;
+  isRecovarable?: boolean;
+  status?: ProductStatus | null;
+  categories: Category[];
+}
+
 export interface ProductProps extends ProductDetailProps {
-  id?: ProductId | null;
+  id: ProductId;
   code: ProductCode;
   name: string;
   price: Price;

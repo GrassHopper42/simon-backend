@@ -4,19 +4,19 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
 } from 'typeorm';
 
 @Entity('categories')
 export class CategoryEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn()
+  id: string;
 
   @Column({ length: 50, unique: true, nullable: false })
   name: string;
 
   @Column({ name: 'parent_id', nullable: true })
-  parentId?: number;
+  parentId?: string;
 
   @ManyToOne(() => CategoryEntity, { nullable: true })
   @JoinColumn({ name: 'parent_id' })

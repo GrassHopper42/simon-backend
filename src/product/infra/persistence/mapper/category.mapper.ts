@@ -1,12 +1,12 @@
-import { Category } from 'src/product/domain/models/category.model';
+import { Category, CategoryId } from 'src/product/domain/models/category.model';
 import { CategoryEntity } from '../category.entity';
 
 export class CategoryMapper {
   static toDomain(entity: CategoryEntity): Category {
     return new Category({
-      id: entity.id,
+      id: entity.id as CategoryId,
       name: entity.name,
-      parentId: entity.parentId,
+      parentId: entity.parentId as CategoryId,
     });
   }
 
