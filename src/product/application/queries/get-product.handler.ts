@@ -15,7 +15,7 @@ export class GetProductHandler {
   ) {}
 
   async execute(query: GetProductQuery): Promise<Product> {
-    const product = this.productRepository.findById(query.id);
+    const product = await this.productRepository.findById(query.id);
     if (!product) {
       throw new NotFoundException(
         `ID가 ${query.id}인 제품을 찾을 수 없습니다.`,
