@@ -1,5 +1,5 @@
 import { Entity } from 'src/common/ddd/entity';
-import { IdGenerator } from 'src/common/ddd/id.generator';
+import { generateId } from 'src/common/ddd/id.generator';
 import { DomainValidationError } from 'src/common/error/validation';
 import { Branded } from 'src/common/types/branded';
 
@@ -19,7 +19,7 @@ export class Category extends Entity<CategoryId> {
     this._parentId = parentId;
   }
 
-  private validateCircularReference(parentId: string): void {
+  private validateCircularReference(parentId?: string): void {
     if (this._id === parentId) {
       throw new DomainValidationError(
         '부모 카테고리를 자기 자신으로 설정할 수 없습니다',
@@ -28,7 +28,7 @@ export class Category extends Entity<CategoryId> {
   }
 
   public static create(props: CategoryCreateProps): Category {
-    const id = IdGenerator.generate() as CategoryId;
+    const id = generateId() as CategoryId;
 
     return new Category({
       id,
@@ -44,9 +44,24 @@ export class Category extends Entity<CategoryId> {
     return this;
   }
 
+  updateParentId(parentId?: string): Category {
+    this.validateCircularReference(parentId);
+    this._parentId = parentId;
+
+    return this;
+  }
+
   private validateName(name: string): void {
     if (!name || name.trim().length === 0) {
       throw new DomainValidationError('카테고리 이름은 필수입니다');
+    }
+    if (name.length > 50) {
+      throw new DomainValidationError('카테고리 이름은 50자 이하여야 합니다');
+    }
+    if (/[~!@#$%^&*()_+={}[\]|\\;:"'<>,.?/]/.test(name)) {
+      throw new DomainValidationError(
+        '카테고리 이름에 특수 문자를 사용할 수 없습니다',
+      );
     }
   }
 

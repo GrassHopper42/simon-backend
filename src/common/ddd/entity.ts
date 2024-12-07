@@ -9,7 +9,7 @@ export abstract class Entity<T = string> {
     return this._id;
   }
 
-  public equals(other: Entity<T>): boolean {
+  public equals(other: this): boolean {
     if (!other) return false;
     return this._id === other.id;
   }

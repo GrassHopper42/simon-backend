@@ -13,7 +13,7 @@ export interface ProductDTO {
   specification?: string;
   description?: string;
 
-  isRecovarable: boolean;
+  isRecoverable: boolean;
   status: ProductStatus;
 
   categories: ProductCategoryDTO[];

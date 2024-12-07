@@ -1,7 +1,5 @@
 import { ulid } from 'ulid';
 
-export class IdGenerator {
-  public static generate(): string {
-    return ulid();
-  }
-}
+export const generateId = (): string => {
+  return ulid();
+};

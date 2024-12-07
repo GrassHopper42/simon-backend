@@ -31,7 +31,7 @@ export class Price {
     priceWithTax: Money,
     taxRate: number = PRICE_CONSTANTS.DEFAULT_TAX_RATE,
   ): Price {
-    const priceWithoutTax = this.calculatePriceWithoutTax(
+    const priceWithoutTax = Price.calculatePriceWithoutTax(
       priceWithTax,
       taxRate,
     );

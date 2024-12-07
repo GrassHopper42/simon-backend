@@ -1,6 +1,6 @@
 import { CommandHandler } from '@nestjs/cqrs';
 import { UpdateProductPriceCommand } from './update-price.command';
-import { Inject } from '@nestjs/common';
+import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import {
   PRODUCT_REPOSITORY,
   ProductRepository,
@@ -16,6 +16,12 @@ export class UpdateProductPriceHandler {
   ) {}
   async execute(command: UpdateProductPriceCommand) {
     const product = await this.repository.findById(command.id);
+    if (!product) {
+      throw new NotFoundException(
+        `ID가 ${command.id}인 제품을 찾을 수 없습니다.`,
+      );
+    }
+    this.validatePrice(command.price);
     const newPrice = this.getNewPrice(command);
     product.updatePrice(newPrice);
 
@@ -26,5 +32,11 @@ export class UpdateProductPriceHandler {
     return command.includeTax
       ? Price.withTax(Money.of(command.price))
       : Price.of(Money.of(command.price));
+  }
+
+  private validatePrice(price: number): void {
+    if (price < 0) {
+      throw new BadRequestException('가격은 0 이상이어야 합니다.');
+    }
   }
 }

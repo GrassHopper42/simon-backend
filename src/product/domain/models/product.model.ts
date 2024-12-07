@@ -6,8 +6,8 @@ import { ProductPriceUpdated } from '../events/price-update.event';
 import { Branded } from 'src/common/types/branded';
 import { ProductPolicy } from '../policies/product.policy';
 import { ProductCreatedEvent } from '../events/product-created.event';
-import { IdGenerator } from 'src/common/ddd/id.generator';
 import { ProductDeletedEvent } from '../events/product-deleted.event';
+import { generateId } from 'src/common/ddd/id.generator';
 
 export type ProductId = Branded<string, 'ProductId'>;
 export type ProductCode = Branded<string, 'ProductCode'>;
@@ -22,7 +22,7 @@ export class Product extends AggregateRoot<ProductId> {
   private _specification: string;
   private _description: string;
 
-  private _isRecovarable: boolean;
+  private _isRecoverable: boolean;
   private _status: ProductStatus;
 
   private _categories: Category[];
@@ -38,21 +38,23 @@ export class Product extends AggregateRoot<ProductId> {
       props.categories,
     );
     if (categoryValidation.success === false) throw categoryValidation.error;
+    const priceValidation = ProductPolicy.validatePrice(props.price);
+    if (priceValidation.success === false) throw priceValidation.error;
 
     this._code = codeValidation.value;
     this._name = nameValidation.value;
-    this._price = props.price;
+    this._price = priceValidation.value;
     this._unit = props.unit;
     this._capacity = props.capacity;
     this._specification = props.specification;
     this._description = props.description;
-    this._isRecovarable = props.isRecovarable;
+    this._isRecoverable = props.isRecoverable;
     this._status = props.status ?? ProductStatus.ON_SALE;
     this._categories = categoryValidation.value;
   }
 
   public static create(props: ProductCreateProps): Product {
-    const id = IdGenerator.generate() as ProductId;
+    const id = generateId() as ProductId;
 
     const product = new Product({
       id,
@@ -114,11 +116,11 @@ export class Product extends AggregateRoot<ProductId> {
     });
   }
 
-  public setRecovarable(isRecovarable?: boolean): Product {
+  public setRecoverable(isRecovarable?: boolean): Product {
     if (isRecovarable === undefined) return this;
     return new Product({
       ...this.toProductProps(),
-      isRecovarable,
+      isRecoverable: isRecovarable,
     });
   }
 
@@ -185,8 +187,8 @@ export class Product extends AggregateRoot<ProductId> {
     return this._description;
   }
 
-  get isRecovarable(): boolean {
-    return this._isRecovarable;
+  get isRecoverable(): boolean {
+    return this._isRecoverable;
   }
 
   get status(): ProductStatus {
@@ -207,7 +209,7 @@ export class Product extends AggregateRoot<ProductId> {
       capacity: this.capacity,
       specification: this.specification,
       description: this.description,
-      isRecovarable: this.isRecovarable,
+      isRecoverable: this.isRecoverable,
       status: this.status,
       categories: this.categories,
     };
@@ -218,7 +220,7 @@ export interface ProductCreateProps extends ProductDetailProps {
   code: ProductCode;
   name: string;
   price: Price;
-  isRecovarable?: boolean;
+  isRecoverable?: boolean;
   status?: ProductStatus | null;
   categories: Category[];
 }
@@ -228,7 +230,7 @@ export interface ProductProps extends ProductDetailProps {
   code: ProductCode;
   name: string;
   price: Price;
-  isRecovarable?: boolean;
+  isRecoverable?: boolean;
   status?: ProductStatus | null;
   categories: Category[];
 }

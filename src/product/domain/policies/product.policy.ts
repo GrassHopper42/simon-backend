@@ -2,6 +2,10 @@ import { DomainValidationError } from 'src/common/error/validation';
 import { Result } from 'src/common/types/result';
 import { Category } from '../models/category.model';
 import { ProductCode } from '../models/product.model';
+import { Price } from '../values/price.vo';
+
+const MIN_CODE_LENGTH = 3;
+const PRODUCT_CODE_PATTERN = /^[A-Z0-9]+$/;
 
 // src/product/domain/policies/product.policy.ts
 export class ProductPolicy {
@@ -19,14 +23,14 @@ export class ProductPolicy {
   static validateCode(
     code: string,
   ): Result<ProductCode, DomainValidationError> {
-    if (!code || code.length < 3) {
+    if (!code || code.length < MIN_CODE_LENGTH) {
       return {
         success: false,
         error: new DomainValidationError('상품 코드는 3자 이상이어야 합니다'),
       };
     }
 
-    if (!/^[A-Z0-9]+$/.test(code)) {
+    if (!PRODUCT_CODE_PATTERN.test(code)) {
       return {
         success: false,
         error: new DomainValidationError(
@@ -51,5 +55,16 @@ export class ProductPolicy {
     }
 
     return { success: true, value: categories };
+  }
+
+  static validatePrice(price: Price): Result<Price, DomainValidationError> {
+    if (!price) {
+      return {
+        success: false,
+        error: new DomainValidationError('상품 가격은 필수입니다'),
+      };
+    }
+
+    return { success: true, value: price };
   }
 }

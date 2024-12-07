@@ -2,12 +2,9 @@ import { Money } from 'src/common/value/money.vo';
 import { Price } from '../../values/price.vo';
 import { Category } from '../category.model';
 import { Product, ProductCode, ProductStatus } from '../product.model';
+import { generateId } from 'src/common/ddd/id.generator';
 
 describe('Product Model', () => {
-  const createCategory = (name: string, id: number): Category => {
-    return new Category({ id, name });
-  };
-
   const createProductCode = (code: string): ProductCode => {
     return code as ProductCode;
   };
@@ -15,7 +12,7 @@ describe('Product Model', () => {
   describe('create', () => {
     it('should create product with valid props', () => {
       // given
-      const category = createCategory('Test Category', 1);
+      const category = Category.create({ name: 'Test Category' });
       const props = {
         code: createProductCode('TEST001'),
         name: 'Test Product',
@@ -24,7 +21,7 @@ describe('Product Model', () => {
       };
 
       // when
-      const product = new Product(props);
+      const product = Product.create(props);
 
       // then
       expect(product.code).toBe(props.code);
@@ -32,7 +29,7 @@ describe('Product Model', () => {
 
     it('should throw error when code is less than 3 characters', () => {
       // given
-      const category = createCategory('Test Category', 1);
+      const category = Category.create({ name: 'Test Category' });
       const props = {
         code: createProductCode('AB'),
         name: 'Test Product',
@@ -41,7 +38,7 @@ describe('Product Model', () => {
       };
 
       // when, then
-      expect(() => new Product(props)).toThrow();
+      expect(() => Product.create(props)).toThrow();
     });
 
     it('should throw error when name is empty', () => {
@@ -49,10 +46,10 @@ describe('Product Model', () => {
         code: createProductCode('TEST001'),
         name: '', // empty name
         price: Price.of(Money.of(10000)),
-        categories: [createCategory('Test Category', 1)],
+        categories: [Category.create({ name: 'Test Category' })],
       };
 
-      expect(() => new Product(props)).toThrow();
+      expect(() => Product.create(props)).toThrow();
     });
 
     it('should throw error when categories is empty', () => {
@@ -63,25 +60,25 @@ describe('Product Model', () => {
         categories: [], // empty categories
       };
 
-      expect(() => new Product(props)).toThrow();
+      expect(() => Product.create(props)).toThrow();
     });
 
     it('should throw error when price is missing', () => {
       const props = {
         code: createProductCode('TEST001'),
         name: 'Test Product',
-        categories: [createCategory('Test Category', 1)],
+        categories: [Category.create({ name: 'Test Category' })],
       } as any;
 
-      expect(() => new Product(props)).toThrow();
+      expect(() => Product.create(props)).toThrow();
     });
   });
 
   describe('updatePrice', () => {
     it('should update price correctly', () => {
       // given
-      const category = createCategory('Test Category', 1);
-      const product = new Product({
+      const category = Category.create({ name: 'Test Category' });
+      const product = Product.create({
         code: createProductCode('TEST001'),
         name: 'Test Product',
         price: Price.of(Money.of(10000)),
@@ -90,36 +87,36 @@ describe('Product Model', () => {
       const newPrice = Price.of(Money.of(20000));
 
       // when
-      product.updatePrice(Price.of(Money.of(20000)));
+      const updatedProduct = product.updatePrice(Price.of(Money.of(20000)));
 
       // then
-      expect(product.price).toEqual(newPrice);
+      expect(updatedProduct.price).toEqual(newPrice);
     });
   });
 
   describe('category management', () => {
     it('should add category correctly', () => {
       // given
-      const category = createCategory('Test Category', 1);
-      const product = new Product({
+      const category = Category.create({ name: 'Test Category' });
+      const product = Product.create({
         code: createProductCode('TEST001'),
         name: 'Test Product',
         price: Price.of(Money.of(10000)),
         categories: [category],
       });
-      const newCategory = createCategory('New Category', 2);
+      const newCategory = Category.create({ name: 'New Category' });
 
       // when
-      product.addCategory(newCategory);
+      const updatedProduct = product.addCategory(newCategory);
 
       // then
-      expect(product.categories).toContain(newCategory);
+      expect(updatedProduct.categories).toContain(newCategory);
     });
 
     it('should throw error when category is already added', () => {
       // given
-      const category = createCategory('Test Category', 1);
-      const product = new Product({
+      const category = Category.create({ name: 'Test Category' });
+      const product = Product.create({
         code: createProductCode('TEST001'),
         name: 'Test Product',
         price: Price.of(Money.of(10000)),
@@ -131,23 +128,23 @@ describe('Product Model', () => {
     });
 
     it('should remove category correctly', () => {
-      const category1 = createCategory('Category 1', 1);
-      const category2 = createCategory('Category 2', 2);
-      const product = new Product({
+      const category1 = Category.create({ name: 'Category 1' });
+      const category2 = Category.create({ name: 'Category 2' });
+      const product = Product.create({
         code: createProductCode('TEST001'),
         name: 'Test Product',
         price: Price.of(Money.of(10000)),
         categories: [category1, category2],
       });
 
-      product.removeCategory(category1.id);
-      expect(product.categories).not.toContain(category1);
-      expect(product.categories).toContain(category2);
+      const updatedProduct = product.removeCategory(category1.id);
+      expect(updatedProduct.categories).not.toContain(category1);
+      expect(updatedProduct.categories).toContain(category2);
     });
 
     it('should prevent removal of last category', () => {
-      const category = createCategory('Test Category', 1);
-      const product = new Product({
+      const category = Category.create({ name: 'Test Category' });
+      const product = Product.create({
         code: createProductCode('TEST001'),
         name: 'Test Product',
         price: Price.of(Money.of(10000)),
@@ -158,8 +155,8 @@ describe('Product Model', () => {
     });
 
     it('should check category existence correctly', () => {
-      const category = createCategory('Test Category', 1);
-      const product = new Product({
+      const category = Category.create({ name: 'Test Category' });
+      const product = Product.create({
         code: createProductCode('TEST001'),
         name: 'Test Product',
         price: Price.of(Money.of(10000)),
@@ -167,7 +164,7 @@ describe('Product Model', () => {
       });
 
       expect(product.hasCategory(category.id)).toBe(true);
-      expect(product.hasCategory(999)).toBe(false);
+      expect(product.hasCategory(generateId())).toBe(false);
     });
   });
 
@@ -175,11 +172,11 @@ describe('Product Model', () => {
     let product: Product;
 
     beforeEach(() => {
-      product = new Product({
+      product = Product.create({
         code: createProductCode('TEST001'),
         name: 'Test Product',
         price: Price.of(Money.of(10000)),
-        categories: [createCategory('Test Category', 1)],
+        categories: [Category.create({ name: 'Test Category' })],
       });
     });
 
@@ -188,14 +185,13 @@ describe('Product Model', () => {
     });
 
     it('should change status to DISCONTINUED when discontinued', () => {
-      product.discontinue();
-      expect(product.status).toBe(ProductStatus.DISCONTINUED);
+      const updatedProduct = product.discontinue();
+      expect(updatedProduct.status).toBe(ProductStatus.DISCONTINUED);
     });
 
     it('should change status to ON_SALE when resumed', () => {
-      product.discontinue();
-      product.resume();
-      expect(product.status).toBe(ProductStatus.ON_SALE);
+      const updatedProduct = product.discontinue().resume();
+      expect(updatedProduct.status).toBe(ProductStatus.ON_SALE);
     });
   });
 
@@ -203,38 +199,44 @@ describe('Product Model', () => {
     let product: Product;
 
     beforeEach(() => {
-      product = new Product({
+      product = Product.create({
         code: createProductCode('TEST001'),
         name: 'Test Product',
         price: Price.of(Money.of(10000)),
-        categories: [createCategory('Test Category', 1)],
+        categories: [Category.create({ name: 'Test Category' })],
       });
     });
 
     it('should update unit correctly', () => {
-      product.updateProductDetail({ unit: 'BOX' });
-      expect(product.unit).toBe('BOX');
+      const updatedProduct = product.updateProductDetail({ unit: 'BOX' });
+      expect(updatedProduct.unit).toBe('BOX');
     });
 
     it('should update capacity correctly', () => {
-      product.updateProductDetail({ capacity: '100ml' });
-      expect(product.capacity).toBe('100ml');
+      const updatedProduct = product.updateProductDetail({ capacity: '100ml' });
+      expect(updatedProduct.capacity).toBe('100ml');
     });
 
     it('should update specification correctly', () => {
-      product.updateProductDetail({ specification: 'Premium' });
-      expect(product.specification).toBe('Premium');
+      const updatedProduct = product.updateProductDetail({
+        specification: 'Premium',
+      });
+      expect(updatedProduct.specification).toBe('Premium');
     });
 
     it('should update description correctly', () => {
-      product.updateProductDetail({ description: 'New description' });
-      expect(product.description).toBe('New description');
+      const updatedProduct = product.updateProductDetail({
+        description: 'New description',
+      });
+      expect(updatedProduct.description).toBe('New description');
     });
 
     it('should not modify unchanged fields', () => {
       const originalUnit = product.unit;
-      product.updateProductDetail({ description: 'New description' });
-      expect(product.unit).toBe(originalUnit);
+      const updatedProduct = product.updateProductDetail({
+        description: 'New description',
+      });
+      expect(updatedProduct.unit).toBe(originalUnit);
     });
   });
 
@@ -242,30 +244,30 @@ describe('Product Model', () => {
     let product: Product;
 
     beforeEach(() => {
-      product = new Product({
+      product = Product.create({
         code: createProductCode('TEST001'),
         name: 'Test Product',
         price: Price.of(Money.of(10000)),
-        categories: [createCategory('Test Category', 1)],
+        categories: [Category.create({ name: 'Test Category' })],
       });
     });
 
     it('should set recoverable correctly', () => {
-      product.setRecovarable(true);
-      expect(product.isRecovarable).toBe(true);
+      const updatedProduct = product.setRecoverable(true);
+      expect(updatedProduct.isRecoverable).toBe(true);
     });
 
     it('should not change recoverable when undefined is passed', () => {
-      const originalValue = product.isRecovarable;
-      product.setRecovarable(undefined);
-      expect(product.isRecovarable).toBe(originalValue);
+      const originalValue = product.isRecoverable;
+      const updatedProduct = product.setRecoverable(undefined);
+      expect(updatedProduct.isRecoverable).toBe(originalValue);
     });
   });
 
   describe('immutability', () => {
     it('should return new array when getting categories', () => {
-      const category = createCategory('Test Category', 1);
-      const product = new Product({
+      const category = Category.create({ name: 'Test Category' });
+      const product = Product.create({
         code: createProductCode('TEST001'),
         name: 'Test Product',
         price: Price.of(Money.of(10000)),
@@ -273,7 +275,7 @@ describe('Product Model', () => {
       });
 
       const categories = product.categories;
-      categories.push(createCategory('New Category', 2));
+      categories.push(Category.create({ name: 'New Category' }));
 
       expect(product.categories).toHaveLength(1);
     });

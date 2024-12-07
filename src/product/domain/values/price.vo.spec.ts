@@ -31,5 +31,23 @@ describe('Price', () => {
       expect(price.withoutTax.amount).toBe(10000);
       expect(price.withTax.amount).toBe(11000);
     });
+
+    it('should throw error when tax rate is less than 0', () => {
+      const taxRate = -1;
+      // when, then
+      expect(() => Price.of(Money.of(10000), taxRate)).toThrow();
+    });
+
+    it('should throw error when tax rate is greater than 100', () => {
+      const taxRate = 101;
+      // when, then
+      expect(() => Price.of(Money.of(10000), taxRate)).toThrow();
+    });
+
+    it('should throw error when price is less than 0', () => {
+      const price = -1;
+      // when, then
+      expect(() => Price.of(Money.of(price))).toThrow();
+    });
   });
 });

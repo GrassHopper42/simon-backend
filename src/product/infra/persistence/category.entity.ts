@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   OneToMany,
@@ -8,11 +9,12 @@ import {
 } from 'typeorm';
 
 @Entity('categories')
+@Index(['parent_id', 'name'], { unique: true })
 export class CategoryEntity {
   @PrimaryColumn()
   id: string;
 
-  @Column({ length: 50, unique: true, nullable: false })
+  @Column({ length: 50, nullable: false })
   name: string;
 
   @Column({ name: 'parent_id', nullable: true })

@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateProductDto {
   @IsNotEmpty()
@@ -10,13 +16,16 @@ export class CreateProductDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @Min(0)
   readonly price: number;
 
   readonly unit?: string;
-  readonly capacity: string;
-  readonly specification: string;
-  readonly description: string;
-  readonly isRecovarable: boolean;
+  readonly capacity?: string;
+  readonly specification?: string;
+  readonly description?: string;
+
+  @IsBoolean()
+  readonly isRecoverable: boolean;
 
   @IsNotEmpty()
   @IsString({ each: true })

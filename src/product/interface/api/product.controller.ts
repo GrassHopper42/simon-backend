@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Patch, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { CreateProductHandler } from 'src/product/application/commands/create-product/create-product.handler';
 import { UpdateProductPriceHandler } from 'src/product/application/commands/update-price/update-price.handler';
 import { UpdateProductHandler } from 'src/product/application/commands/update-product/update-product.handler';
@@ -35,7 +44,7 @@ export class ProductController {
   }
 
   @Get(':id')
-  async get(@Query('id') id: ProductId) {
+  async get(@Param('id') id: ProductId) {
     return this.getProductHandler.execute({ id });
   }
 
@@ -45,12 +54,12 @@ export class ProductController {
   }
 
   @Put(':id')
-  async update(@Query('id') id: ProductId, @Body() body: any) {
+  async update(@Param('id') id: ProductId, @Body() body: any) {
     return this.updateProductHandler.execute({ id, ...body });
   }
 
   @Patch(':id/price')
-  async updatePrice(@Query('id') id: ProductId, @Body() body: any) {
+  async updatePrice(@Param('id') id: ProductId, @Body() body: any) {
     return this.updateProductPriceHandler.execute({ id, ...body });
   }
 }

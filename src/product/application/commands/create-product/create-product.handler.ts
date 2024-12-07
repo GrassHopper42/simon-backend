@@ -11,7 +11,7 @@ import {
 import { Product, ProductCode } from 'src/product/domain/models/product.model';
 import { Price } from 'src/product/domain/values/price.vo';
 import { Money } from 'src/common/value/money.vo';
-import { ConflictException, Inject } from '@nestjs/common';
+import { ConflictException, Inject, NotFoundException } from '@nestjs/common';
 
 @CommandHandler(CreateProductCommand)
 export class CreateProductHandler {
@@ -27,12 +27,15 @@ export class CreateProductHandler {
     const categories = await this.categoryRepository.findAllByIds(
       command.categoryIds,
     );
+    if (categories.length !== command.categoryIds.length) {
+      throw new NotFoundException('일부 카테고리를 찾을 수 없습니다.');
+    }
 
     const product = Product.create({
       code: command.code as ProductCode,
       name: command.name,
       price: Price.of(Money.of(command.price)),
-      isRecovarable: command.isRecovarable,
+      isRecoverable: command.isRecoverable,
       categories,
       unit: command.unit,
       capacity: command.capacity,

@@ -4,7 +4,8 @@ import {
   PRODUCT_REPOSITORY,
   ProductRepository,
 } from 'src/product/domain/repository/product.repository';
-import { Inject } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
+import { Product } from 'src/product/domain/models/product.model';
 
 @QueryHandler(GetProductQuery)
 export class GetProductHandler {
@@ -13,7 +14,13 @@ export class GetProductHandler {
     private readonly productRepository: ProductRepository,
   ) {}
 
-  async execute(query: GetProductQuery) {
-    return this.productRepository.findById(query.id);
+  async execute(query: GetProductQuery): Promise<Product> {
+    const product = this.productRepository.findById(query.id);
+    if (!product) {
+      throw new NotFoundException(
+        `ID가 ${query.id}인 제품을 찾을 수 없습니다.`,
+      );
+    }
+    return product;
   }
 }

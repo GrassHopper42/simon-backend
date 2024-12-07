@@ -31,7 +31,7 @@ export interface ProductFilter {
     min?: number;
     max?: number;
   };
-  isRecovarable?: boolean;
+  isRecoverable?: boolean;
 }
 
 export interface FindOptions {

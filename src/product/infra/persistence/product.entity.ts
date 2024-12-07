@@ -41,7 +41,7 @@ export class ProductEntity {
   description?: string;
 
   @Column({ name: 'is_recoverable', default: false })
-  isRecovarable: boolean;
+  isRecoverable: boolean;
 
   @Column({
     type: 'enum',

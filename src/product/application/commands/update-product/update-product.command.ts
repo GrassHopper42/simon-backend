@@ -8,6 +8,6 @@ export class UpdateProductCommand {
     readonly capacity?: string,
     readonly specification?: string,
     readonly description?: string,
-    readonly isRecovarable?: boolean,
+    readonly isRecoverable?: boolean,
   ) {}
 }

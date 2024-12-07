@@ -13,7 +13,7 @@ export class ProductMapper {
       capacity: product.capacity,
       specification: product.specification,
       description: product.description,
-      isRecovarable: product.isRecovarable,
+      isRecoverable: product.isRecoverable,
       status: product.status,
       categories: product.categories.map((category) => ({
         id: category.id,
@@ -29,9 +29,10 @@ export class ProductMapper {
       code: product.code.toString(),
       name: product.name,
       priceWithTax: product.price.withTax.amount,
-      isRecovarable: product.isRecovarable,
+      isRecovarable: product.isRecoverable,
       status: product.status,
-      mainCategory: product.categories[0].name,
+      mainCategory:
+        product.categories.length > 0 ? product.categories[0].name : null,
     };
   }
 }

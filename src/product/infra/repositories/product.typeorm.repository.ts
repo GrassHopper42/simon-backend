@@ -11,10 +11,10 @@ import {
   ProductRepository,
 } from 'src/product/domain/repository/product.repository';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { ProductMapper } from '../persistence/mapper/product.mapper';
 import { ProductEntity } from '../persistence/product.entity';
 import { EventBus } from 'src/common/event/event-bus';
 import { CategoryId } from 'src/product/domain/models/category.model';
+import { toDomain, toEntity } from '../persistence/mapper/product.mapper';
 
 @Injectable()
 export class TypeormProductRepository implements ProductRepository {
@@ -42,9 +42,7 @@ export class TypeormProductRepository implements ProductRepository {
 
     return queryBuilder
       .getMany()
-      .then((entities) =>
-        entities.map((entity) => ProductMapper.toDomain(entity)),
-      );
+      .then((entities) => entities.map((entity) => toDomain(entity)));
   }
 
   async findAllByCategories(categoryIds: CategoryId[]): Promise<Product[]> {
@@ -55,9 +53,7 @@ export class TypeormProductRepository implements ProductRepository {
 
     return query
       .getMany()
-      .then((entities) =>
-        entities.map((entity) => ProductMapper.toDomain(entity)),
-      );
+      .then((entities) => entities.map((entity) => toDomain(entity)));
   }
 
   async count(filter: ProductFilter): Promise<number> {
@@ -93,7 +89,7 @@ export class TypeormProductRepository implements ProductRepository {
       where: { id },
       relations: ['categories'],
     });
-    return entity ? ProductMapper.toDomain(entity) : null;
+    return entity ? toDomain(entity) : null;
   }
 
   async findByCode(code: ProductCode): Promise<Product | null> {
@@ -101,7 +97,7 @@ export class TypeormProductRepository implements ProductRepository {
       where: { code },
       relations: ['categories'],
     });
-    return entity ? ProductMapper.toDomain(entity) : null;
+    return entity ? toDomain(entity) : null;
   }
 
   async findAllByCategory(categoryId: CategoryId): Promise<Product[]> {
@@ -113,11 +109,11 @@ export class TypeormProductRepository implements ProductRepository {
       },
       relations: ['categories'],
     });
-    return entities.map((entity) => ProductMapper.toDomain(entity));
+    return entities.map((entity) => toDomain(entity));
   }
 
   async save(product: Product): Promise<void> {
-    const entity = ProductMapper.toEntity(product);
+    const entity = toEntity(product);
     await this.productRepository.insert(entity);
 
     const events = product.clearEvents();
@@ -126,7 +122,7 @@ export class TypeormProductRepository implements ProductRepository {
   }
 
   async update(product: Product): Promise<void> {
-    const entity = ProductMapper.toEntity(product);
+    const entity = toEntity(product);
     await this.productRepository.update(entity.id, entity);
 
     const events = product.clearEvents();
@@ -184,19 +180,41 @@ class ProductQueryBuilder extends SelectQueryBuilder<ProductEntity> {
     return this;
   }
 
-  addIsRecovarableCondition(isRecovarable?: boolean): ProductQueryBuilder {
-    if (isRecovarable === undefined) return this;
+  addIsRecoverableCondition(isRecoverable?: boolean): ProductQueryBuilder {
+    if (isRecoverable === undefined) return this;
     return this.andWhere('product.isRecovarable = :isRecovarable', {
-      isRecovarable,
+      isRecoverable: isRecoverable,
     });
   }
 
   addSortCondition(sort?: FindOptions['sort']): ProductQueryBuilder {
     if (!sort) return this;
+    this.validateSortField(sort.field);
+    this.validateSortOrder(sort.order);
     return this.orderBy(
       `product.${sort.field}`,
       sort.order.toUpperCase() as 'ASC' | 'DESC',
     );
+  }
+
+  private validateSortField(sortField: string): void {
+    const allowedFields = [
+      'name',
+      'priceWithTax',
+      'code',
+      'createdAt',
+      'updatedAt',
+    ];
+    if (!allowedFields.includes(sortField)) {
+      throw new Error('유효하지 않은 정렬 필드입니다');
+    }
+  }
+
+  private validateSortOrder(sortOrder: string): void {
+    const allowedOrders = ['asc', 'desc'];
+    if (!allowedOrders.includes(sortOrder)) {
+      throw new Error('유효하지 않은 정렬 순서입니다');
+    }
   }
 
   addPaginationCondition(skip?: number, limit?: number): ProductQueryBuilder {
@@ -216,6 +234,6 @@ class ProductQueryBuilder extends SelectQueryBuilder<ProductEntity> {
       .addCategoryCondition(filter.categoryId)
       .addStatusCondition(filter.status)
       .addPriceRangeCondition(filter.priceRange)
-      .addIsRecovarableCondition(filter.isRecovarable);
+      .addIsRecoverableCondition(filter.isRecoverable);
   }
 }
