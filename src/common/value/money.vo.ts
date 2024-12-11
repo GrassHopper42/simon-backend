@@ -44,7 +44,7 @@ export class Money extends ValueObject<MoneyProps> {
   }
 
   public multiply(multiplier: number): Money {
-    return Money.of(this.amount * multiplier);
+    return Money.of(Math.round(this.amount * multiplier));
   }
 
   public divide(divisor: number): Money {

@@ -24,7 +24,13 @@ export class EventBus {
           await handler(event);
         } catch (error) {
           console.error(
-            `${event.eventType} 이벤트 핸들러 실행 중 오류 발생: ${error.message}`,
+            JSON.stringify({
+              level: 'error',
+              eventType: event.eventType,
+              error: error.message,
+              timestamp: new Date().toISOString(),
+              aggregateId: event.aggregateId,
+            }),
           );
         }
       }),

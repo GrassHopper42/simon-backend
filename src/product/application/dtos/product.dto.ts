@@ -30,7 +30,7 @@ export interface ProductSummaryDTO {
   code: string;
   name: string;
   priceWithTax: number;
-  isRecovarable: boolean;
+  isRecoverable: boolean;
   status: ProductStatus;
   mainCategory: string;
 }

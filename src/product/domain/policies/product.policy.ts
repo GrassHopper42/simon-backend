@@ -23,14 +23,15 @@ export class ProductPolicy {
   static validateCode(
     code: string,
   ): Result<ProductCode, DomainValidationError> {
-    if (!code || code.length < MIN_CODE_LENGTH) {
+    const sanitizedCode = code.trim();
+    if (!sanitizedCode || sanitizedCode.length < MIN_CODE_LENGTH) {
       return {
         success: false,
         error: new DomainValidationError('상품 코드는 3자 이상이어야 합니다'),
       };
     }
 
-    if (!PRODUCT_CODE_PATTERN.test(code)) {
+    if (!PRODUCT_CODE_PATTERN.test(sanitizedCode)) {
       return {
         success: false,
         error: new DomainValidationError(

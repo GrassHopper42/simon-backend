@@ -84,15 +84,16 @@ export class Product extends AggregateRoot<ProductId> {
     if (!newPrice) return this;
 
     const oldPrice = this.price;
-
-    this.addDomainEvent(
-      new ProductPriceUpdated(this.id.toString(), oldPrice, this.price),
-    );
-
-    return new Product({
+    const updatedProduct = new Product({
       ...this.toProductProps(),
       price: newPrice,
     });
+
+    updatedProduct.addDomainEvent(
+      new ProductPriceUpdated(this.id.toString(), oldPrice, newPrice),
+    );
+
+    return updatedProduct;
   }
 
   public updateProductDetail(props: ProductDetailProps): Product {
@@ -116,11 +117,11 @@ export class Product extends AggregateRoot<ProductId> {
     });
   }
 
-  public setRecoverable(isRecovarable?: boolean): Product {
-    if (isRecovarable === undefined) return this;
+  public setRecoverable(isRecoverable?: boolean): Product {
+    if (isRecoverable === undefined) return this;
     return new Product({
       ...this.toProductProps(),
-      isRecoverable: isRecovarable,
+      isRecoverable,
     });
   }
 
@@ -151,7 +152,7 @@ export class Product extends AggregateRoot<ProductId> {
   public delete(): Product {
     const product = new Product({
       ...this.toProductProps(),
-      status: null,
+      status: ProductStatus.DELETED,
     });
 
     product.addDomainEvent(new ProductDeletedEvent(product.id.toString()));
@@ -245,6 +246,7 @@ export interface ProductDetailProps {
 export const ProductStatus = {
   ON_SALE: 'OnSale',
   DISCONTINUED: 'Discontinued',
+  DELETED: 'Deleted',
 } as const;
 
 export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus];

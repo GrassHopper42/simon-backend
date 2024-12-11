@@ -5,9 +5,12 @@ import { Branded } from 'src/common/types/branded';
 
 export type CategoryId = Branded<string, 'CategoryId'>;
 
+const CATEGORY_NAME_MAX_LENGTH = 50;
+const SPECIAL_CHARACTERS = /[~!@#$%^&*()_+\=\{\}\[\]\|\\;:"'<>,\.?\/]/;
+
 export class Category extends Entity<CategoryId> {
   private _name: string;
-  private _parentId?: string;
+  private _parentId?: CategoryId | null;
 
   constructor(props: CategoryProps) {
     const { id, name, parentId } = props;
@@ -39,26 +42,32 @@ export class Category extends Entity<CategoryId> {
 
   updateName(name: string): Category {
     this.validateName(name);
-    this._name = name;
 
-    return this;
+    return new Category({
+      id: this._id,
+      name,
+      parentId: this._parentId,
+    });
   }
 
-  updateParentId(parentId?: string): Category {
+  updateParentId(parentId?: CategoryId): Category {
     this.validateCircularReference(parentId);
-    this._parentId = parentId;
 
-    return this;
+    return new Category({
+      id: this._id,
+      name: this._name,
+      parentId,
+    });
   }
 
   private validateName(name: string): void {
     if (!name || name.trim().length === 0) {
       throw new DomainValidationError('카테고리 이름은 필수입니다');
     }
-    if (name.length > 50) {
+    if (name.length > CATEGORY_NAME_MAX_LENGTH) {
       throw new DomainValidationError('카테고리 이름은 50자 이하여야 합니다');
     }
-    if (/[~!@#$%^&*()_+={}[\]|\\;:"'<>,.?/]/.test(name)) {
+    if (SPECIAL_CHARACTERS.test(name)) {
       throw new DomainValidationError(
         '카테고리 이름에 특수 문자를 사용할 수 없습니다',
       );
@@ -81,10 +90,10 @@ export class Category extends Entity<CategoryId> {
 interface CategoryProps {
   id: CategoryId;
   name: string;
-  parentId?: string | null;
+  parentId?: CategoryId | null;
 }
 
 interface CategoryCreateProps {
   name: string;
-  parentId?: string | null;
+  parentId?: CategoryId | null;
 }

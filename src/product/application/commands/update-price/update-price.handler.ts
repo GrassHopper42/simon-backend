@@ -30,8 +30,8 @@ export class UpdateProductPriceHandler {
 
   private getNewPrice(command: UpdateProductPriceCommand): Price {
     return command.includeTax
-      ? Price.withTax(Money.of(command.price))
-      : Price.of(Money.of(command.price));
+      ? Price.of(Money.of(command.price))
+      : Price.withoutTax(Money.of(command.price));
   }
 
   private validatePrice(price: number): void {

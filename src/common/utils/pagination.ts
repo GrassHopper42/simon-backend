@@ -23,11 +23,15 @@ export function createPagination<T>(
 }
 
 export function calcSkip(page: number, limit: number): number {
-  return (page - 1) * limit;
+  if (page <= 0) throw new Error('페이지 번호는 1 이상이어야 합니다');
+  const validatedLimit = validateLimit(limit);
+  return (page - 1) * validatedLimit;
 }
 
 export function calcTotalPage(total: number, limit: number): number {
-  return Math.ceil(total / limit);
+  const validatedTotal = validateTotal(total);
+  const validatedLimit = validateLimit(limit);
+  return Math.ceil(validatedTotal / validatedLimit);
 }
 
 export function validatePage(
@@ -39,4 +43,14 @@ export function validatePage(
   if (page < 1) return 1;
   if (page > totalPages) return totalPages;
   return page;
+}
+
+function validateLimit(limit: number): number {
+  if (limit < 1) throw new Error('한 페이지당 항목 수는 1 이상이어야 합니다');
+  return limit;
+}
+
+function validateTotal(total: number): number {
+  if (total < 0) throw new Error('총 항목 수는 0 이상이어야 합니다');
+  return total;
 }

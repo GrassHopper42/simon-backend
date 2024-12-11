@@ -59,10 +59,10 @@ describe('Category', () => {
       const category = Category.create({ name: 'Old Name' });
 
       // when
-      category.updateName('New Name');
+      const updatedCategory = category.updateName('New Name');
 
       // then
-      expect(category.name).toBe('New Name');
+      expect(updatedCategory.name).toBe('New Name');
     });
 
     it('should throw error when updating to empty name', () => {
@@ -85,10 +85,10 @@ describe('Category', () => {
       const parentCategory = Category.create({ name: 'Parent Category' });
 
       // when
-      childCategory.updateParentId(parentCategory.id);
+      const updatedCategory = childCategory.updateParentId(parentCategory.id);
 
       // then
-      expect(childCategory.parentId).toBe(parentCategory.id);
+      expect(updatedCategory.parentId).toBe(parentCategory.id);
     });
 
     it('should throw error when updating to circular reference', () => {

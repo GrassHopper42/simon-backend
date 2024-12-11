@@ -6,7 +6,7 @@ describe('Price', () => {
   describe('create', () => {
     it('should create price with tax', () => {
       // given
-      const price = Price.of(Money.of(10000), 20);
+      const price = Price.of(Money.of(12000), 20);
 
       // then
       expect(price.withoutTax.amount).toBe(10000);
@@ -16,7 +16,7 @@ describe('Price', () => {
 
     it('should create default tax rate', () => {
       // given
-      const price = Price.of(Money.of(10000));
+      const price = Price.of(Money.of(11000));
 
       // then
       expect(price.withoutTax.amount).toBe(10000);
@@ -25,7 +25,7 @@ describe('Price', () => {
 
     it('should create price from tax included amount', () => {
       // given
-      const price = Price.withTax(Money.of(11000), 10);
+      const price = Price.withoutTax(Money.of(10000), 10);
 
       // then
       expect(price.withoutTax.amount).toBe(10000);

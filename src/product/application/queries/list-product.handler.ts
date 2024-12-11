@@ -8,12 +8,13 @@ import {
   ProductRepository,
 } from 'src/product/domain/repository/product.repository';
 import { ProductMapper } from '../dtos/mappers/product.mapper';
-import { Inject } from '@nestjs/common';
+import { Inject, InternalServerErrorException } from '@nestjs/common';
 import {
   calcSkip,
   createPagination,
   validatePage,
 } from 'src/common/utils/pagination';
+import { Product } from 'src/product/domain/models/product.model';
 
 @QueryHandler(ListProductQuery)
 export class ListProductHandler {
@@ -26,27 +27,36 @@ export class ListProductHandler {
     query: ListProductQuery,
   ): Promise<PaginatedResponse<ProductSummaryDTO>> {
     // 쿼리 파라미터
-    let page = query.page || 1;
-    const limit = query.limit || 10;
+    let page = Math.max(1, query.page || 1);
+    const limit = Math.max(1, query.limit || 10);
     const filter: ProductFilter = {
       categoryId: query.categoryId,
       status: query.status,
       keyword: query.keyword,
     };
 
-    // 총 상품 수 조회
-    const total = await this.productRepository.count(filter);
+    let total = 0;
+    let products: Product[];
 
-    // 페이지 계산
-    page = validatePage(page, limit, total);
-    const skip = calcSkip(page, limit);
+    try {
+      // 총 상품 수 조회
+      total = await this.productRepository.count(filter);
 
-    // 상품 목록 조회
-    const products = await this.productRepository.findMany(filter, {
-      sort: query.sort,
-      skip,
-      limit,
-    });
+      // 페이지 계산
+      page = validatePage(page, limit, total);
+      const skip = calcSkip(page, limit);
+
+      // 상품 목록 조회
+      products = await this.productRepository.findMany(filter, {
+        sort: query.sort,
+        skip,
+        limit,
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `상품 목록을 조회하는 중 오류가 발생했습니다. ${error.message}`,
+      );
+    }
 
     // DTO로 변환
     const items = products.map((product) =>

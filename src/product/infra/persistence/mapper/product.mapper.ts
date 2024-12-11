@@ -33,14 +33,14 @@ export const toEntity = (domain: Product): ProductEntity => {
   entity.name = domain.name;
   entity.priceWithoutTax = domain.price.withoutTax.amount;
   entity.priceWithTax = domain.price.withTax.amount;
-  entity.unit = domain.unit;
-  entity.capacity = domain.capacity;
-  entity.specification = domain.specification;
-  entity.description = domain.description;
+  entity.unit = domain.unit ?? null;
+  entity.capacity = domain.capacity ?? null;
+  entity.specification = domain.specification ?? null;
+  entity.description = domain.description ?? null;
   entity.isRecoverable = domain.isRecoverable;
   entity.status = domain.status;
-  entity.categories = domain.categories.map((category) =>
-    CategoryMapper.toEntity(category),
-  );
+  entity.categories =
+    domain.categories?.map((category) => CategoryMapper.toEntity(category)) ??
+    [];
   return entity;
 };

@@ -10,24 +10,29 @@ export class Price {
   private readonly _taxRate: number;
 
   private constructor(
+    priceWithTax: Money,
     priceWithoutTax: Money,
     taxRate: number = PRICE_CONSTANTS.DEFAULT_TAX_RATE,
   ) {
     this._taxRate = taxRate;
+    this._withTax = priceWithTax;
     this._withoutTax = priceWithoutTax;
-    this._withTax = this.calculateTaxIncludedPrice();
 
     this.validate();
   }
 
+  // Price는 기본적으로 부가세를 포함한 금액을 생성합니다.
+  /**
+   * 부가세를 포함한 금액을 생성합니다.
+   * 부가세를 포함하지 않은 금액을 생성하려면 withoutTax를 사용하세요.
+   * @param {Money} priceWithTax 부가세를 포함한 금액
+   * @param {number} taxRate 부가세율 (기본값: 10)
+   * @returns {Price} Price
+   * @throws DomainValidationError
+   * @example
+   * const price = Price.of(Money.of(12000), 20);
+   */
   static of(
-    priceWithoutTax: Money,
-    taxRate: number = PRICE_CONSTANTS.DEFAULT_TAX_RATE,
-  ): Price {
-    return new Price(priceWithoutTax, taxRate);
-  }
-
-  static withTax(
     priceWithTax: Money,
     taxRate: number = PRICE_CONSTANTS.DEFAULT_TAX_RATE,
   ): Price {
@@ -35,7 +40,29 @@ export class Price {
       priceWithTax,
       taxRate,
     );
-    return new Price(priceWithoutTax, taxRate);
+    return new Price(priceWithTax, priceWithoutTax, taxRate);
+  }
+
+  // 부가세를 포함하지 않은 금액을 생성합니다.
+  /**
+   * 부가세를 포함하지 않은 금액을 생성합니다.
+   * 부가세를 포함한 금액을 생성하려면 of를 사용하세요.
+   * @param priceWitouthTax 부가세를 포함하지 않은 금액
+   * @param taxRate 부가세율 (기본값: 10)
+   * @returns Price
+   * @throws DomainValidationError
+   * @example
+   * const price = Price.withoutTax(Money.of(10000), 10);
+   */
+  static withoutTax(
+    priceWitouthTax: Money,
+    taxRate: number = PRICE_CONSTANTS.DEFAULT_TAX_RATE,
+  ): Price {
+    const priceWithTax = Price.calculateTaxIncludedPrice(
+      priceWitouthTax,
+      taxRate,
+    );
+    return new Price(priceWithTax, priceWitouthTax, taxRate);
   }
 
   private validate(): void {
@@ -45,10 +72,25 @@ export class Price {
     if (this._taxRate > 100) {
       throw new DomainValidationError('부가세율은 100 이하여야 합니다');
     }
+    if (
+      this._withTax.amount <
+      this._withoutTax.multiply(1 + this._taxRate / 100).amount
+    ) {
+      throw new DomainValidationError('부가세가 잘못 계산되었습니다');
+    }
+    if (
+      this._withoutTax.amount >
+      this._withTax.multiply(100 / (100 + this._taxRate)).amount
+    ) {
+      throw new DomainValidationError('부가세가 잘못 계산되었습니다');
+    }
   }
 
-  private calculateTaxIncludedPrice(): Money {
-    return this._withoutTax.multiply(1 + this._taxRate / 100);
+  private static calculateTaxIncludedPrice(
+    price: Money,
+    taxRate: number,
+  ): Money {
+    return price.multiply(1 + taxRate / 100);
   }
 
   private static calculatePriceWithoutTax(

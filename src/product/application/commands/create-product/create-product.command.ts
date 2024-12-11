@@ -19,5 +19,8 @@ export class CreateProductCommand {
     if (name.length > 100) {
       throw new Error('이름은 100자 이하여야 합니다.');
     }
+    if (categoryIds.length === 0) {
+      throw new Error('카테고리는 1개 이상이어야 합니다.');
+    }
   }
 }

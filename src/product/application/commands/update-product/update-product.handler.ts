@@ -5,6 +5,7 @@ import {
   PRODUCT_REPOSITORY,
   ProductRepository,
 } from 'src/product/domain/repository/product.repository';
+import { ProductId } from 'src/product/domain/models/product.model';
 
 @CommandHandler(UpdateProductCommand)
 export class UpdateProductHandler {
@@ -20,16 +21,29 @@ export class UpdateProductHandler {
       );
     }
 
-    product
-      .updateName(command.name)
-      .updateProductDetail({
-        unit: command.unit,
-        capacity: command.capacity,
-        specification: command.specification,
-        description: command.description,
-      })
-      .setRecoverable(command.isRecoverable);
+    try {
+      product
+        .updateName(command.name)
+        .updateProductDetail({
+          unit: command.unit,
+          capacity: command.capacity,
+          specification: command.specification,
+          description: command.description,
+        })
+        .setRecoverable(command.isRecoverable);
 
-    await this.repository.update(product);
+      await this.repository.update(product);
+    } catch (error) {
+      throw new ProductUpdateError(command.id, error);
+    }
+  }
+}
+
+class ProductUpdateError extends Error {
+  constructor(id: ProductId, error: Error) {
+    super(
+      `ID가 ${id}인 제품을 업데이트하는 중 오류가 발생했습니다. ${error.message}`,
+    );
+    this.name = 'ProductUpdateError';
   }
 }
