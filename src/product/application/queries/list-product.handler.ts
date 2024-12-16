@@ -7,7 +7,6 @@ import {
   ProductFilter,
   ProductRepository,
 } from 'src/product/domain/repository/product.repository';
-import { ProductMapper } from '../dtos/mappers/product.mapper';
 import { Inject, InternalServerErrorException } from '@nestjs/common';
 import {
   calcSkip,
@@ -15,6 +14,7 @@ import {
   validatePage,
 } from 'src/common/utils/pagination';
 import { Product } from 'src/product/domain/models/product.model';
+import { toProductSummaryDTO } from '../dtos/mappers/product.mapper';
 
 @QueryHandler(ListProductQuery)
 export class ListProductHandler {
@@ -52,16 +52,14 @@ export class ListProductHandler {
         skip,
         limit,
       });
-    } catch (error) {
+    } catch (_) {
       throw new InternalServerErrorException(
-        `상품 목록을 조회하는 중 오류가 발생했습니다. ${error.message}`,
+        `상품 목록을 조회하는 중 오류가 발생했습니다.`,
       );
     }
 
     // DTO로 변환
-    const items = products.map((product) =>
-      ProductMapper.toSummaryDTO(product),
-    );
+    const items = products.map((product) => toProductSummaryDTO(product));
     return createPagination(items, { page, limit, total });
   }
 }

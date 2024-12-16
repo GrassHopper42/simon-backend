@@ -79,8 +79,10 @@ export class Price {
       throw new DomainValidationError('부가세가 잘못 계산되었습니다');
     }
     if (
-      this._withoutTax.amount >
-      this._withTax.multiply(100 / (100 + this._taxRate)).amount
+      !Price.isAlmostEqual(
+        this._withoutTax.amount,
+        this._withTax.multiply(100 / (100 + this._taxRate)).amount,
+      )
     ) {
       throw new DomainValidationError('부가세가 잘못 계산되었습니다');
     }
@@ -98,6 +100,12 @@ export class Price {
     taxRate: number = PRICE_CONSTANTS.DEFAULT_TAX_RATE,
   ): Money {
     return priceWithTax.multiply(100 / (100 + taxRate));
+  }
+
+  private static readonly EPSILON = 0.000001;
+
+  private static isAlmostEqual(a: number, b: number): boolean {
+    return Math.abs(a - b) < Price.EPSILON;
   }
 
   get withTax(): Money {

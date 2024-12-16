@@ -40,7 +40,7 @@ export class ProductPolicy {
       };
     }
 
-    return { success: true, value: code as ProductCode };
+    return { success: true, value: sanitizedCode as ProductCode };
   }
 
   static validateCategories(

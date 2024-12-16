@@ -5,16 +5,19 @@ export function createPagination<T>(
   pagination: Pagination,
 ): PaginatedResponse<T> {
   const { page, limit, total } = pagination;
-  const totalPages = Math.ceil(total / limit);
-  const hasPrev = page > 1;
-  const hasNext = page < totalPages;
+  const validatedPage = validatePage(page, limit, total);
+  const validatedLimit = validateLimit(limit);
+  const validatedTotal = validateTotal(total);
+  const totalPages = Math.ceil(validatedTotal / validatedLimit);
+  const hasPrev = validatedPage > 1;
+  const hasNext = validatedPage < totalPages;
 
   return {
     items,
     pagination: {
-      page,
-      limit,
-      total,
+      page: validatedPage,
+      limit: validatedLimit,
+      total: validatedTotal,
       totalPages,
       hasPrev,
       hasNext,

@@ -5,7 +5,8 @@ import {
   ProductRepository,
 } from 'src/product/domain/repository/product.repository';
 import { Inject, NotFoundException } from '@nestjs/common';
-import { Product } from 'src/product/domain/models/product.model';
+import { toProductDTO } from '../dtos/mappers/product.mapper';
+import { ProductDTO } from '../dtos/product.dto';
 
 @QueryHandler(GetProductQuery)
 export class GetProductHandler {
@@ -14,13 +15,13 @@ export class GetProductHandler {
     private readonly productRepository: ProductRepository,
   ) {}
 
-  async execute(query: GetProductQuery): Promise<Product> {
+  async execute(query: GetProductQuery): Promise<ProductDTO> {
     const product = await this.productRepository.findById(query.id);
     if (!product) {
       throw new NotFoundException(
         `ID가 ${query.id}인 제품을 찾을 수 없습니다.`,
       );
     }
-    return product;
+    return toProductDTO(product);
   }
 }

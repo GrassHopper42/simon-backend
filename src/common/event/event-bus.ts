@@ -53,12 +53,18 @@ export class EventBus {
   }
 
   private validateEventType(eventType: string): void {
-    if (!eventType.trim())
+    if (!eventType?.trim())
       throw new Error('eventType은 빈 문자열일 수 없습니다');
+    if (eventType.includes(' '))
+      throw new Error('eventType은 공백을 포함할 수 없습니다');
+    if (eventType.length > 100)
+      throw new Error('eventType은 100자 이하여야 합니다');
   }
 
   private validateHandler(handler: EventHandler): void {
-    if (typeof handler !== 'function')
+    if (!handler || typeof handler !== 'function')
       throw new Error('handler는 함수이어야 합니다');
+    if (handler.length !== 1)
+      throw new Error('handler는 정확히 하나의 매개변수를 가져야 합니다');
   }
 }
