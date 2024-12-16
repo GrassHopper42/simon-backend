@@ -7,7 +7,7 @@ import {
   ProductFilter,
   ProductRepository,
 } from 'src/product/domain/repository/product.repository';
-import { Inject, InternalServerErrorException } from '@nestjs/common';
+import { Inject, InternalServerErrorException, Logger } from '@nestjs/common';
 import {
   calcSkip,
   createPagination,
@@ -18,6 +18,7 @@ import { toProductSummaryDTO } from '../dtos/mappers/product.mapper';
 
 @QueryHandler(ListProductQuery)
 export class ListProductHandler {
+  private readonly logger = new Logger(ListProductHandler.name);
   constructor(
     @Inject(PRODUCT_REPOSITORY)
     private readonly productRepository: ProductRepository,
@@ -52,7 +53,8 @@ export class ListProductHandler {
         skip,
         limit,
       });
-    } catch (_) {
+    } catch (error) {
+      this.logger.warn('상품 목록 조회 실패:', error);
       throw new InternalServerErrorException(
         `상품 목록을 조회하는 중 오류가 발생했습니다.`,
       );
