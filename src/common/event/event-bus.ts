@@ -4,8 +4,10 @@ import { DomainEvent } from './domain-event';
 type EventHandler = (event: DomainEvent) => Promise<void>;
 @Injectable()
 export class EventBus {
-  private readonly handlers: Map<string, EventHandler[]> = new Map();
   private readonly logger: Logger = new Logger('EventBus');
+
+  private readonly handlers: Map<string, EventHandler[]> = new Map();
+  private static readonly SLOW_HANDLER_THRESHOLD_MS = 1000;
 
   public subscribe(eventType: string, handler: EventHandler): void {
     this.validateEventType(eventType);
@@ -39,19 +41,14 @@ export class EventBus {
           const handlerStartTime = performance.now();
           await handler(event);
           const handlerDuration = performance.now() - handlerStartTime;
-          if (handlerDuration > 1000) {
+          if (handlerDuration > EventBus.SLOW_HANDLER_THRESHOLD_MS) {
             this.logger.warn(
-              `이벤트 타입 ${event.eventType}에 대한 핸들러가 1초 이상 소요되었습니다: ${handlerDuration}ms`,
+              `이벤트 타입 ${event.eventType}에 대한 핸들러가 임계값 이상 소요되었습니다: ${handlerDuration}ms`,
             );
           }
         } catch (error) {
           this.logger.error(
-            JSON.stringify({
-              eventType: event.eventType,
-              error: error.message,
-              aggregateId: event.aggregateId,
-              duration: performance.now() - startTime,
-            }),
+            `이벤트 ${event.eventType} 처리 중 오류 발생: ${error.message}\naggregateId: ${event.aggregateId}\n소요시간: ${performance.now() - startTime}ms`,
           );
         }
       }),

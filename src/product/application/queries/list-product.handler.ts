@@ -54,7 +54,7 @@ export class ListProductHandler {
         limit,
       });
     } catch (error) {
-      this.logger.warn('상품 목록 조회 실패:', error);
+      this.logger.error('상품 목록 조회 실패:', error);
       throw new InternalServerErrorException(
         `상품 목록을 조회하는 중 오류가 발생했습니다.`,
       );
