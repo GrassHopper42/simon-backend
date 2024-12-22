@@ -1,6 +1,7 @@
 import { generateId } from 'src/common/ddd/id.generator';
 import { Branded } from 'src/common/types/branded';
 import { PhoneNumber } from '../values/phone_number.vo';
+import { Role } from './role';
 
 export class Staff {
   private readonly _id: StaffId;
@@ -44,6 +45,22 @@ export class Staff {
     return new Staff({
       ...this.toStaffProps(),
       ...props,
+      updatedAt: new Date(),
+    });
+  }
+
+  public assignRole(role: Role): Staff {
+    return new Staff({
+      ...this.toStaffProps(),
+      roles: [...this._roles, role],
+      updatedAt: new Date(),
+    });
+  }
+
+  public removeRole(role: Role): Staff {
+    return new Staff({
+      ...this.toStaffProps(),
+      roles: this._roles.filter((r) => r !== role),
       updatedAt: new Date(),
     });
   }
@@ -144,20 +161,6 @@ export class Staff {
 }
 
 export type StaffId = Branded<string, 'StaffId'>;
-
-export const Role = {
-  ADMIN: 'Admin',
-  SALES_MANAGER: 'SalesManager',
-  SALES_STAFF: 'SalesStaff',
-  INVENTORY_MANAGER: 'InventoryManager',
-  INVENTORY_STAFF: 'InventoryStaff',
-  PURCHASE_MANAGER: 'PurchaseManager',
-  PURCHASE_STAFF: 'PurchaseStaff',
-  ACCOUNT_MANAGER: 'AccountManager',
-  ACCOUNT_STAFF: 'AccountStaff',
-};
-
-export type Role = (typeof Role)[keyof typeof Role];
 
 export const StaffStatus = {
   ACTIVE: 'Active',
