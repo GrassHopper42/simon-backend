@@ -5,16 +5,16 @@ import { Role } from './role';
 
 export class Staff {
   private readonly _id: StaffId;
-  private _name: string;
-  private _phone: PhoneNumber;
-  private _roles: Role[];
-  private _status: StaffStatus;
-  private _birthday: Date;
-  private _email?: string;
-  private _address?: string;
-  private _note?: string;
+  private readonly _name: string;
+  private readonly _phone: PhoneNumber;
+  private readonly _roles: Role[];
+  private readonly _status: StaffStatus;
+  private readonly _birthday: Date;
+  private readonly _email?: string;
+  private readonly _address?: string;
+  private readonly _note?: string;
   private readonly _createdAt: Date;
-  private _updatedAt: Date;
+  private readonly _updatedAt: Date;
 
   private constructor(props: StaffProps) {
     this._id = props.id;

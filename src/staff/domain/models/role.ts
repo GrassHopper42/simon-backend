@@ -1,9 +1,9 @@
 export class Role {
   private readonly _code: string;
-  private _name: string;
-  private _description?: string;
+  private readonly _name: string;
+  private readonly _description?: string;
   private readonly _createdAt: Date;
-  private _updatedAt: Date;
+  private readonly _updatedAt: Date;
 
   private constructor(props: RoleProps) {
     const validatedCode = this.validateCode(props.code);
