@@ -11,7 +11,7 @@ export class Staff {
   private readonly _status: StaffStatus;
   private readonly _birthday: Date;
   private readonly _email?: string;
-  private readonly _address?: string;
+  private readonly _address?: string; // 주소는 필수가 아니며, 사용자의 편의에 따라 일부 생략 가능하므로 별도의 유효성 검사 생략
   private readonly _note?: string;
   private readonly _createdAt: Date;
   private readonly _updatedAt: Date;
