@@ -2,9 +2,12 @@ import { generateId } from 'src/common/ddd/id.generator';
 import { Branded } from 'src/common/types/branded';
 import { PhoneNumber } from '../values/phone_number.vo';
 import { Role } from './role';
+import { AggregateRoot } from 'src/common/ddd/aggregate-root';
+import { StaffCreatedEvent } from '../events/staff-created.event';
+import { StatusChangeEvent } from '../events/status-change.event';
+import { StaffPolicy } from '../policies/staff.policy';
 
-export class Staff {
-  private readonly _id: StaffId;
+export class Staff extends AggregateRoot<StaffId> {
   private readonly _name: string;
   private readonly _phone: PhoneNumber;
   private readonly _roles: Role[];
@@ -17,15 +20,23 @@ export class Staff {
   private readonly _updatedAt: Date;
 
   private constructor(props: StaffProps) {
-    this._id = props.id;
-    this._name = props.name;
+    super(props.id);
+
+    const nameValidation = StaffPolicy.validateName(props.name);
+    if (nameValidation.success === false) throw nameValidation.error;
+    const emailValidation = StaffPolicy.validateEmail(props.email);
+    if (emailValidation.success === false) throw emailValidation.error;
+    const noteValidation = StaffPolicy.validteNote(props.note);
+    if (noteValidation.success === false) throw noteValidation.error;
+
+    this._name = nameValidation.value;
     this._phone = props.phone;
     this._roles = props.roles;
     this._status = props.status;
     this._birthday = props.birthday;
-    this._email = props.email;
+    this._email = emailValidation.value;
     this._address = props.address;
-    this._note = props.note;
+    this._note = noteValidation.value;
     this._createdAt = props.createdAt;
     this._updatedAt = props.updatedAt;
   }
@@ -33,12 +44,16 @@ export class Staff {
   public static create(props: StaffCreateProps): Staff {
     const id = generateId() as StaffId;
 
-    return new Staff({
+    const staff = new Staff({
       id,
       ...props,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
+
+    staff.addDomainEvent(new StaffCreatedEvent(staff.id.toString(), staff));
+
+    return staff;
   }
 
   public updateInformation(props: StaffInfoProps): Staff {
@@ -50,6 +65,11 @@ export class Staff {
   }
 
   public assignRole(role: Role): Staff {
+    const isDuplicate = this._roles.includes(role);
+    if (isDuplicate) {
+      throw new Error('이미 할당된 역할입니다');
+    }
+
     return new Staff({
       ...this.toStaffProps(),
       roles: [...this._roles, role],
@@ -65,28 +85,39 @@ export class Staff {
     });
   }
 
-  public activate(): Staff {
-    return new Staff({
-      ...this.toStaffProps(),
-      status: StaffStatus.ACTIVE,
-      updatedAt: new Date(),
-    });
+  public activate(reason?: string): Staff {
+    if (this._status === StaffStatus.DELETED) {
+      throw new Error('삭제된 직원은 활성화할 수 없습니다');
+    }
+
+    return this.changeStatus(StaffStatus.ACTIVE, reason);
   }
 
-  public deactivate(): Staff {
-    return new Staff({
-      ...this.toStaffProps(),
-      status: StaffStatus.INACTIVE,
-      updatedAt: new Date(),
-    });
+  public deactivate(reason?: string): Staff {
+    return this.changeStatus(StaffStatus.INACTIVE, reason);
   }
 
   public delete(): Staff {
-    return new Staff({
+    return this.changeStatus(StaffStatus.DELETED);
+  }
+
+  private changeStatus(newStatus: StaffStatus, reason?: string): Staff {
+    const event = new StatusChangeEvent(
+      this.id.toString(),
+      this.status,
+      newStatus,
+      reason,
+    );
+
+    const staff = new Staff({
       ...this.toStaffProps(),
-      status: StaffStatus.DELETED,
+      status: newStatus,
       updatedAt: new Date(),
     });
+
+    staff.addDomainEvent(event);
+
+    return staff;
   }
 
   public static of(props: StaffProps): Staff {
@@ -131,16 +162,6 @@ export class Staff {
 
   public get updatedAt(): Date {
     return this._updatedAt;
-  }
-
-  public updateName(newName?: string): Staff {
-    if (!newName) return this;
-
-    return new Staff({
-      ...this.toStaffProps(),
-      name: newName,
-      updatedAt: new Date(),
-    });
   }
 
   private toStaffProps(): StaffProps {

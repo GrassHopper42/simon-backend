@@ -1,4 +1,11 @@
-export class Role {
+import { Entity } from 'src/common/ddd/entity';
+import { generateId } from 'src/common/ddd/id.generator';
+import { Branded } from 'src/common/types/branded';
+import { RolePolicy } from '../policies/role.policy';
+
+export type RoleId = Branded<string, 'RoleId'>;
+
+export class Role extends Entity<RoleId> {
   private readonly _code: string;
   private readonly _name: string;
   private readonly _description?: string;
@@ -6,18 +13,30 @@ export class Role {
   private readonly _updatedAt: Date;
 
   private constructor(props: RoleProps) {
-    const validatedCode = this.validateCode(props.code);
-    const validatedName = this.validateName(props.name);
+    super(props.id);
 
-    this._code = validatedCode;
-    this._name = validatedName;
-    this._description = props.description;
+    const codeValidation = RolePolicy.validateCode(props.code);
+    if (codeValidation.success === false) throw codeValidation.error;
+    const nameValidation = RolePolicy.validateName(props.name);
+    if (nameValidation.success === false) throw nameValidation.error;
+    const descriptionValidation = RolePolicy.validateDescription(
+      props.description,
+    );
+    if (descriptionValidation.success === false)
+      throw descriptionValidation.error;
+
+    this._code = codeValidation.value;
+    this._name = nameValidation.value;
+    this._description = descriptionValidation.value;
     this._createdAt = props.createdAt;
     this._updatedAt = props.updatedAt;
   }
 
   public static create(props: RoleCreateProps): Role {
+    const id = generateId() as RoleId;
+
     return new Role({
+      id,
       ...props,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -26,25 +45,6 @@ export class Role {
 
   public static of(props: RoleProps): Role {
     return new Role(props);
-  }
-
-  private validateCode(code: string): string {
-    if (!/^[A-Z0-9]+$/.test(code)) {
-      throw new Error('코드는 대문자와 숫자로만 이루어져야 합니다.');
-    }
-    if (code.length < 3 || code.length > 50) {
-      throw new Error('코드는 3자 이상 50자 이하여야 합니다.');
-    }
-
-    return code;
-  }
-
-  private validateName(name: string): string {
-    if (name.length < 3 || name.length > 50) {
-      throw new Error('이름은 3자 이상 50자 이하여야 합니다.');
-    }
-
-    return name;
   }
 
   public get code(): string {
@@ -69,6 +69,7 @@ export class Role {
 }
 
 export interface RoleProps {
+  id: RoleId;
   code: string;
   name: string;
   description?: string;
@@ -77,6 +78,7 @@ export interface RoleProps {
 }
 
 export interface RoleCreateProps {
+  id: RoleId;
   code: string;
   name: string;
   description?: string;
