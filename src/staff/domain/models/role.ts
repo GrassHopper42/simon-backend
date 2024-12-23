@@ -37,7 +37,9 @@ export class Role extends Entity<RoleId> {
 
     return new Role({
       id,
-      ...props,
+      code: props.code,
+      name: props.name,
+      description: props.description,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -45,6 +47,17 @@ export class Role extends Entity<RoleId> {
 
   public static of(props: RoleProps): Role {
     return new Role(props);
+  }
+
+  public update(props: { name?: string; description?: string }): Role {
+    return new Role({
+      id: this._id,
+      code: this._code,
+      name: props.name,
+      description: props.description,
+      createdAt: this._createdAt,
+      updatedAt: new Date(),
+    });
   }
 
   public get code(): string {
@@ -78,7 +91,6 @@ export interface RoleProps {
 }
 
 export interface RoleCreateProps {
-  id: RoleId;
   code: string;
   name: string;
   description?: string;

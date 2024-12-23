@@ -26,7 +26,7 @@ export class Staff extends AggregateRoot<StaffId> {
     if (nameValidation.success === false) throw nameValidation.error;
     const emailValidation = StaffPolicy.validateEmail(props.email);
     if (emailValidation.success === false) throw emailValidation.error;
-    const noteValidation = StaffPolicy.validteNote(props.note);
+    const noteValidation = StaffPolicy.validateNote(props.note);
     if (noteValidation.success === false) throw noteValidation.error;
 
     this._name = nameValidation.value;
@@ -47,6 +47,7 @@ export class Staff extends AggregateRoot<StaffId> {
     const staff = new Staff({
       id,
       ...props,
+      roles: props.roles || [],
       createdAt: new Date(),
       updatedAt: new Date(),
     });
