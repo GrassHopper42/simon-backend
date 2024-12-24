@@ -5,42 +5,76 @@ export class StaffPolicy {
   public static validateName(
     name: string,
   ): Result<string, DomainValidationError> {
-    // 2자 이상 5자 이하의 한국어 이름
-    const namePattern = /^[가-힣]{2,5}$/;
-    if (!namePattern.test(name)) {
-      return {
-        success: false,
-        error: new DomainValidationError(
-          '이름은 2자 이상 5자 이하의 한글로 입력해주세요',
-        ),
-      };
-    }
-    return { success: true, value: name };
+    return StaffPolicy.validatePattern(
+      name,
+      /^[가-힣]{2,5}$/,
+      '이름은 2자 이상 5자 이하의 한글로 입력해주세요',
+    );
   }
 
   public static validateEmail(
-    email: string,
+    email?: string,
   ): Result<string, DomainValidationError> {
-    const emailPattern =
-      /(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/;
-    if (!emailPattern.test(email)) {
-      return {
-        success: false,
-        error: new DomainValidationError('이메일 형식이 올바르지 않습니다'),
-      };
-    }
-    return { success: true, value: email };
+    if (!email) return { success: true, value: '' };
+    let valid = StaffPolicy.validateLength(
+      email,
+      10,
+      50,
+      '이메일은 10자 이상 50자 이하로 입력해주세요',
+    );
+    if (!valid.success) return valid;
+
+    valid = StaffPolicy.validatePattern(
+      email,
+      /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+      '이메일 형식이 올바르지 않습니다',
+    );
+    if (!valid.success) return valid;
+
+    return valid;
   }
 
   public static validateNote(
     note?: string,
   ): Result<string, DomainValidationError> {
-    if (note.length > 200) {
+    if (!note) return { success: true, value: '' };
+
+    return StaffPolicy.validateLength(
+      note,
+      0,
+      200,
+      '200자 이하로 입력해주세요',
+    );
+  }
+
+  private static validateLength(
+    value: string,
+    min: number,
+    max: number,
+    message?: string,
+  ): Result<string, DomainValidationError> {
+    if (value.length < min || value.length > max) {
       return {
         success: false,
-        error: new DomainValidationError('노트는 200자 이하로 입력해주세요'),
+        error: new DomainValidationError(
+          message || `${min}자 이상 ${max}자 이하로 입력해주세요`,
+        ),
       };
     }
-    return { success: true, value: note };
+    return { success: true, value };
+  }
+
+  private static validatePattern(
+    value: string,
+    pattern: RegExp,
+    message?: string,
+  ): Result<string, DomainValidationError> {
+    if (!pattern.test(value)) {
+      return {
+        success: false,
+        error: new DomainValidationError(message),
+      };
+    }
+    return { success: true, value };
   }
 }
