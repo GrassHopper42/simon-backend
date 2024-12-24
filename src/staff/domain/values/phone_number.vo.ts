@@ -22,19 +22,19 @@ export class PhoneNumber {
 
   private toFormattedPhone(phone: string): string {
     // 휴대폰 번호(11자리)
-    if (phone.match(/^01\d{9}$/)) {
+    if (/^01\d{9}$/.exec(phone)) {
       return phone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
     }
     // 서울 지역번호(02-xxxx-xxxx)
-    if (phone.match(/^02\d{8}$/)) {
+    if (/^02\d{8}$/.exec(phone)) {
       return phone.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
     }
     // 서울 지역번호(02-xxx-xxxx)
-    if (phone.match(/^02\d{7}$/)) {
+    if (/^02\d{7}$/.exec(phone)) {
       return phone.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
     }
     // 지역번호(3자리) + 전화번호(7자리)
-    if (phone.match(/^0\d{2}\d{7}$/)) {
+    if (/^0\d{2}\d{7}$/.exec(phone)) {
       return phone.replace(/(\d{3})(\d{7})(\d{4})/, '$1-$2-$3');
     }
     return phone;

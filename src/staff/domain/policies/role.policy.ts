@@ -84,7 +84,7 @@ export class RolePolicy {
       return {
         success: false,
         error: new DomainValidationError(
-          message ? message : '입력 형식이 올바르지 않습니다',
+          message || '입력 형식이 올바르지 않습니다',
         ),
       };
     }
@@ -101,9 +101,8 @@ export class RolePolicy {
       return {
         success: false,
         error: new DomainValidationError(
-          message
-            ? message
-            : `입력은 ${minLength}자 이상 ${maxLength}자 이하여야 합니다`,
+          message ||
+            `입력은 ${minLength}자 이상 ${maxLength}자 이하여야 합니다`,
         ),
       };
     }
