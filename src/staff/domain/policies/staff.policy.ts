@@ -26,7 +26,7 @@ export class StaffPolicy {
 
     valid = StaffPolicy.validatePattern(
       email,
-      /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+      /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/,
       '이메일 형식이 올바르지 않습니다',
     );
     if (!valid.success) return valid;
